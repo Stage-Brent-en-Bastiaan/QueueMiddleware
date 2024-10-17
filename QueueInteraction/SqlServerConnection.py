@@ -1,6 +1,6 @@
 import configparser
 import pyodbc
-from Models import *
+from QueueInteraction.Models import *
 
 class SqlServerConnection:
     def __init__(self)-> None:
@@ -16,7 +16,7 @@ class SqlServerConnection:
         connection = pyodbc.connect(connection_string)
         self.connection=connection
 
-    def getFirstQueueItem(self) -> TaskQueue:
+    def getFirstQueueItem(self) -> Task:
         statusToUse="pending"
         query="""SELECT Top 1 id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
             FROM tasks_queue
@@ -25,7 +25,7 @@ class SqlServerConnection:
         cursor.execute(query,statusToUse)
         tasks = []
         for row in cursor.fetchall():
-            task = TaskQueue(
+            task = Task(
                 id=row.id,
                 task_type=row.task_type,
                 payload=row.payload,  # Assuming payload is a JSON string or dict
@@ -38,6 +38,8 @@ class SqlServerConnection:
                 processed_at=row.processed_at
             )
             tasks.append(task)
-        print("gevonden tasks:",tasks)
         cursor.close()
-        return tasks[0]
+        if(tasks.__len__<=0):
+            return None
+        else:
+            return tasks[0]

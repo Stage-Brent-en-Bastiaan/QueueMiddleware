@@ -9,7 +9,7 @@ class TaskType:
     api_endpoint: Optional[str] = None
 
 @dataclass
-class TaskQueue:
+class Task:
     id: int
     task_type: str
     payload: Any
