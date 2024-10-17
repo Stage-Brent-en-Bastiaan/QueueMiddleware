@@ -16,7 +16,7 @@ class SqlServerConnection:
         connection = pyodbc.connect(connection_string)
         self.connection=connection
 
-    def getFirstQueueItem(self) -> Task:
+    def getFirstPendingQueueItem(self) -> Task:
         statusToUse="pending"
         query="""SELECT Top 1 id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
             FROM tasks_queue

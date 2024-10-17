@@ -1,17 +1,6 @@
-from SQLQueueCommunication.SqlServerConnection import SqlServerConnection
+from QueueManager import QueueManager
 import time
 def main():
-    running=True
-    while(running):
-        serverConnection=SqlServerConnection()
-
-        # Fetch data
-        firstQueueTask = serverConnection.getFirstQueueItem()
-
-        # Print fetched data
-        print("first task in the queue", firstQueueTask)
-        #wacht 5 seconden
-        #time.sleep(5)
-        running=False
+    queuemanager=QueueManager()
 if __name__ == "__main__":
     main()
