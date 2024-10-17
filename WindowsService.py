@@ -5,6 +5,7 @@ import servicemanager
 import socket
 import os
 import time
+import UseCase2
 
 class MyService(win32serviceutil.ServiceFramework):
     _svc_name_ = 'api_communication_middleWare_azstlucas_brent_bastiaan_mario'
@@ -31,7 +32,8 @@ class MyService(win32serviceutil.ServiceFramework):
         # Main service logic goes here
         while self.is_alive:
             # Perform your service tasks here
-            time.sleep(5)  # Example: Sleep for 5 seconds
+            UseCase2.main()
+            self.SvcStop
 
 
 if __name__ == '__main__':

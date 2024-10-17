@@ -1,6 +1,6 @@
 import configparser
 import pyodbc
-from QueueInteraction.Models import *
+from .Models import *
 
 class SqlServerConnection:
     def __init__(self)-> None:
@@ -39,7 +39,7 @@ class SqlServerConnection:
             )
             tasks.append(task)
         cursor.close()
-        if(tasks.__len__<=0):
+        if(tasks.__len__()<=0):
             return None
         else:
             return tasks[0]

@@ -1,4 +1,4 @@
-from QueueInteraction.SqlServerConnection import SqlServerConnection
+from SQLQueueCommunication.SqlServerConnection import SqlServerConnection
 import time
 def main():
     running=True
@@ -11,6 +11,7 @@ def main():
         # Print fetched data
         print("first task in the queue", firstQueueTask)
         #wacht 5 seconden
-        time.sleep(5)
+        #time.sleep(5)
+        running=False
 if __name__ == "__main__":
     main()
