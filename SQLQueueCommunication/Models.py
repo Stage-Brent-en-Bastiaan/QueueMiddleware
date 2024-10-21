@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, Any
+from Settings import Settings
+
 
 @dataclass
 class TaskType:
@@ -8,11 +10,12 @@ class TaskType:
     description: Optional[str] = None
     api_endpoint: Optional[str] = None
 
+
 @dataclass
 class Task:
     id: int
     task_type: str
-    payload: Any
+    payload: list[dict[str:str]]
     status: str
     statuslog: Optional[str] = None
     retries: int = 0
@@ -24,3 +27,9 @@ class Task:
     def update_status(self, new_status: str):
         self.status = new_status
         self.updated_at = datetime.now()
+        self.retries = self.retries + 1
+
+    def start_process(self):
+        self.processed_at = datetime.now()
+        settingsfactory = Settings()
+        self.update_status(list(settingsfactory.statuses)[1])

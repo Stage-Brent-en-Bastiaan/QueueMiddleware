@@ -1,45 +1,94 @@
 import configparser
 import pyodbc
 from .Models import *
+import json
+from Settings import Settings
+
 
 class SqlServerConnection:
-    def __init__(self)-> None:
-        #get needed config data from ini file and create a new connection 
+    def __init__(self) -> None:
+        # get needed config data from ini file and create a new connection
         config = configparser.ConfigParser()
         config.read(".ini")
-        dbconfiguration=config["queue_db"]
+        dbconfiguration = config["queue_db"]
         server = dbconfiguration["server"]
         database = dbconfiguration["database"]
         username = dbconfiguration["username"]
         password = dbconfiguration["password"]
         connection_string = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
         connection = pyodbc.connect(connection_string)
-        self.connection=connection
+        # store connection in a variable
+        self.connection: pyodbc.Connection = connection
+        settingsfactory = Settings()
+        self.statuses: list[str] = list(settingsfactory.statuses)
 
     def getFirstPendingQueueItem(self) -> Task:
-        statusToUse="pending"
-        query="""SELECT Top 1 id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
+        statusToUse: str = self.statuses[0]
+        query = """
+            SELECT Top 1 id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
             FROM tasks_queue
-            WHERE Status = ?"""
+            WHERE Status = ?
+            """
         cursor = self.connection.cursor()
-        cursor.execute(query,statusToUse)
+        cursor.execute(query, statusToUse)
         tasks = []
         for row in cursor.fetchall():
+            # print("payload", row.payload)
             task = Task(
                 id=row.id,
                 task_type=row.task_type,
-                payload=row.payload,  # Assuming payload is a JSON string or dict
+                payload=json.loads(
+                    row.payload
+                ),  # Assuming payload is a JSON string or dict
                 status=row.status,
                 statuslog=row.statuslog,
                 retries=row.retries,
                 priority=row.priority,
                 created_at=row.created_at,
                 updated_at=row.updated_at,
-                processed_at=row.processed_at
+                processed_at=row.processed_at,
             )
             tasks.append(task)
         cursor.close()
-        if(tasks.__len__()<=0):
+        if tasks.__len__() <= 0:
+            print("-no new tasks found")
             return None
         else:
+            if tasks.__len__() > 1:
+                print(
+                    "--Fout: er is meer dan 1 task gevonden maar er werd er maar 1 verwacht"
+                )
+            print("-task(s) found:", tasks.__len__())
             return tasks[0]
+
+    def updateTask(self, task: Task) -> None:
+        print("-updating task with id: ", task.id)
+        query = """
+            UPDATE tasks_queue
+            SET 
+                status = ?, 
+                statuslog = ?, 
+                retries = ?, 
+                created_at = ?, 
+                updated_at = ?, 
+                processed_at = ?
+            WHERE ID = ?
+            """
+        # Values to update in the database (use the task values)
+        values = (
+            task.status,
+            task.statuslog,
+            task.retries,
+            task.created_at,
+            task.updated_at,
+            task.processed_at,
+            task.id,
+        )
+        cursor = self.connection.cursor()
+        # print("-updating with values:",values)
+        cursor.execute(query, values)
+        if cursor.messages.__len__() > 0:
+            print("-sqlmessages:", cursor.messages)
+        cursor.commit()
+        cursor.close()
+        print("-updated")

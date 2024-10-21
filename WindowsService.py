@@ -7,9 +7,10 @@ import os
 import time
 import UseCase2
 
+
 class MyService(win32serviceutil.ServiceFramework):
-    _svc_name_ = 'api_communication_middleWare_azstlucas_brent_bastiaan_mario'
-    _svc_display_name_ = 'api_communication_middleWare_azstlucas_brent_bastiaan_mario'
+    _svc_name_ = "api_communication_middleWare_azstlucas_brent_bastiaan_mario"
+    _svc_display_name_ = "api_communication_middleWare_azstlucas_brent_bastiaan_mario"
 
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
@@ -23,9 +24,11 @@ class MyService(win32serviceutil.ServiceFramework):
         self.is_alive = False
 
     def SvcDoRun(self):
-        servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
-                              servicemanager.PYS_SERVICE_STARTED,
-                              (self._svc_name_, ''))
+        servicemanager.LogMsg(
+            servicemanager.EVENTLOG_INFORMATION_TYPE,
+            servicemanager.PYS_SERVICE_STARTED,
+            (self._svc_name_, ""),
+        )
         self.main()
 
     def main(self):
@@ -36,7 +39,7 @@ class MyService(win32serviceutil.ServiceFramework):
             self.SvcStop
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(os.sys.argv) == 1:
         servicemanager.Initialize()
         servicemanager.PrepareToHostSingle(MyService)
