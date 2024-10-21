@@ -1,3 +1,4 @@
+import configparser
 from typing import Any
 from dataclasses import dataclass
 import json
@@ -6,15 +7,22 @@ from dataclasses import dataclass
 import json
 from typing import Optional
 from datetime import datetime
+from requests.auth import HTTPBasicAuth
 # print("Loading Patient module...")
 
 # Example Usage
 # jsonstring = json.loads(myjsonstring)
 # patient = Patient.from_dict(jsonstring)
 """
-hier komen alle globale variabelen voor deze laag
+hier komen alle globale variabelen voor communicatie met de bewell api
 """
+
 apiurl = "https://mijntest.azstlucas.be/api/v2/"
+config = configparser.ConfigParser()
+config.read(".ini")
+user = config["api"]["username"]
+psswd = config["api"]["password"]
+basicauth: HTTPBasicAuth = HTTPBasicAuth(user, psswd)
 
 """
 hier komen alle klassen die gebruikt worden voor communicatie met de bewell api
@@ -38,10 +46,10 @@ class PatientGet:
     locale: str
 
     def full_name(self):
-        return self.first_name+ " " + self.last_name
+        return self.first_name + " " + self.last_name
 
     @staticmethod
-    def from_dict(obj: Any) -> "Root":
+    def from_dict(obj: Any):
         ##print("from_dict called")
         _id = int(obj.get("id")) if obj.get("id") is not None else None
         _box_code = str(obj.get("box_code"))
@@ -73,6 +81,7 @@ class PatientGet:
         )
 
 
+# message klasses
 @dataclass
 class Content:
     text: str
