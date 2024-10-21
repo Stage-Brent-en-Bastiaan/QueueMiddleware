@@ -47,26 +47,27 @@ class QueueManager:
         conn = SqlServerConnection()
         conn.updateTask(task)
         # get the function from taskdict that is linked to the task type name and execute it,
-        statusReturned = self.taskDict.get(task.task_type)(task.payload)
+        statusReturned:list[str] = self.taskDict.get(task.task_type)(task.payload)
         # return the returned status to the update_status method
         task.update_status(statusReturned)
         conn.updateTask(task)
 
     # taskdict methods, should all look the same
-    def sendMessage(self, payload: list[dict["hospital_id":int, "message":str]]) -> str:
+    def sendMessage(self, payload: list[dict["hospital_id":int, "message":str]]) -> list[str]:
         print("-executing send message task, payload:", payload)
-        for line in payload:
+        if(payload.__len__()>=1):
+            pass
+        else:
             patientenFactory = Patienten()
-            print("searching for patient met hospital_id: ", line["hospital_id"])
-            patient = patientenFactory.getPatientHospitalId(line["hospital_id"])
+            print("searching for patient met hospital_id: ", payload["hospital_id"])
+            patient = patientenFactory.getPatientHospitalId(payload["hospital_id"])
             if patient == None:
-                pass
+                return [self.statuses[3], "deze patient bestaat niet in de bewell omgeving"]
             else:
-                print("patient gevonden: ", patient)
-                # Messages.PostNewMessage(MessagePost(patient.id,line["hospital_id"]))
-        return ("failed", "the request was not handled")
+                    print("patient gevonden: ", patient)
+                    # Messages.PostNewMessage(MessagePost(patient.id,line["hospital_id"]))
 
-    def testTask(self, payload: list[dict[str:str]]) -> str:
+    def testTask(self, payload: list[dict[str:str]]) -> list[str]:
         print("-executing test task, payload:", payload)
         time.sleep(2)
-        return self.statuses[2]
+        return [self.statuses[2],"succesvol getest"]
