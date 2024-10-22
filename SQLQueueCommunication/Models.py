@@ -15,9 +15,9 @@ class TaskType:
 class Task:
     id: int
     task_type: str
-    payload: list[dict[str:str]]
+    payload: any
     status: str
-    statuslog: Optional[str] = None
+    statuslog: Optional[str] = ""
     retries: int = 0
     priority: int = 0
     created_at: datetime = field(default_factory=datetime.now)
@@ -25,12 +25,14 @@ class Task:
     processed_at: Optional[datetime] = None
 
     def update_status(self, new_status: list[str]):
+        if new_status is None:
+            raise ValueError("new_status cannot be None")
         self.status = new_status[0]
-        self.statuslog=new_status[1]
+        self.statuslog = self.statuslog + f", new_status[1]"
         self.updated_at = datetime.now()
         self.retries = self.retries + 1
 
     def start_process(self):
         self.processed_at = datetime.now()
         settingsfactory = Settings()
-        self.update_status([list(settingsfactory.statuses)[1],"verwerking is gestart"])
+        self.update_status([list(settingsfactory.statuses)[1], "verwerking is gestart"])

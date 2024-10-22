@@ -23,7 +23,7 @@ class Messages:
         url = f"{self.apiurl}created_from={datetime.timestamp(today)}"
         print("-requesting: ", url)
         headers = {"Accept": "application/json"}
-        response = requests.get(url, self.basicauth, headers=headers, verify=False)
+        response = requests.get(url, auth=self.basicauth, headers=headers, verify=False)
         print("responseStatus:", response.status_code)
         if response.status_code == 200:
             responseList = response.json()
@@ -62,7 +62,7 @@ class Messages:
         print("post payload: ", messageJson)
         response = requests.post(
             url,
-            self.basicauth,
+            auth=self.basicauth,
             headers=headers,
             verify=False,
             data=messageJson,

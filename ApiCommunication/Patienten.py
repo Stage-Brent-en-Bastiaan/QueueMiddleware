@@ -4,13 +4,14 @@ import json
 from requests.auth import HTTPBasicAuth
 from pprint import pprint
 from functools import lru_cache
+import configparser
 
 
 class Patienten:
     def __init__(self):
         # de basis url voor alle calls die met patienten te maken hebben
-        self.apiurl = apiurl + "patients"
-        self.basicauth = basicauth
+        self.apiurl: str = apiurl + "patients"
+        self.basicauth: HTTPBasicAuth = basicauth
         # cache voor caching, wordt opgeruimd als de klasse wordt opgeruimd
         self.cache = {}
 
@@ -38,7 +39,9 @@ class Patienten:
             print("-requesting: ", url)
             headers = {"Accept": "application/json"}
 
-            response = requests.get(url, self.basicauth, headers=headers, verify=False)
+            response = requests.get(
+                url, auth=self.basicauth, headers=headers, verify=False
+            )
             patient = PatientGet.from_dict(response.json())
             self.cache[id] = patient
             return patient
@@ -47,11 +50,10 @@ class Patienten:
     @lru_cache(maxsize=20)
     def getPatienten(self, parameters: str) -> list[PatientGet]:
         returnType = PatientGet
-        url = f"{self.apiurl}{parameters}"
+        url = f"{str(self.apiurl)}{str(parameters)}"
         print("-requesting: ", url)
         headers = {"Accept": "application/json"}
-
-        response = requests.get(url, self.basicauth, headers=headers, verify=False)
+        response = requests.get(url, auth=self.basicauth, headers=headers, verify=False)
         print("-responseStatus: ", response.status_code)
         if response.status_code == 200:
             responseDict = response.json()
@@ -63,7 +65,7 @@ class Patienten:
             raise ConnectionError(
                 f"could not get patienten from request:{url} {response.reason}"
             )
-            return []
+            return None
 
 
 # errors

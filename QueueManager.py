@@ -47,27 +47,32 @@ class QueueManager:
         conn = SqlServerConnection()
         conn.updateTask(task)
         # get the function from taskdict that is linked to the task type name and execute it,
-        statusReturned:list[str] = self.taskDict.get(task.task_type)(task.payload)
+        statusReturned: list[str] = self.taskDict.get(task.task_type)(task.payload)
         # return the returned status to the update_status method
         task.update_status(statusReturned)
         conn.updateTask(task)
 
     # taskdict methods, should all look the same
-    def sendMessage(self, payload: list[dict["hospital_id":int, "message":str]]) -> list[str]:
+    def sendMessage(self, payload) -> list[str]:
         print("-executing send message task, payload:", payload)
-        if(payload.__len__()>=1):
-            pass
+        if not isinstance(payload, dict):
+            return (
+                self.statuses[3],
+                """geef een juiste payload terug de payload voor sendmessage moet er zo uitzien { "patient_number":"7402241006","message":"Graag je huisarts contacteren voor meer info"}""",
+            )
+        payload: dict[str, str] = payload
+        patientenFactory = Patienten()
+        hospitalId=payload["hospital_id"]
+        print("searching for patient met hospital_id: ", hospitalId)
+        patient = patientenFactory.getPatientHospitalId(hospitalId)
+        if patient == None:
+            return [self.statuses[3], "deze patient bestaat niet in de bewell omgeving"]
         else:
-            patientenFactory = Patienten()
-            print("searching for patient met hospital_id: ", payload["hospital_id"])
-            patient = patientenFactory.getPatientHospitalId(payload["hospital_id"])
-            if patient == None:
-                return [self.statuses[3], "deze patient bestaat niet in de bewell omgeving"]
-            else:
-                    print("patient gevonden: ", patient)
-                    # Messages.PostNewMessage(MessagePost(patient.id,line["hospital_id"]))
+            print("patient gevonden: ", patient)
+            #Messages.PostNewMessage(MessagePost(patient.id, patient.id["hospital_id"]))
+            return [self.statuses[2], "patient is gevonden"]
 
     def testTask(self, payload: list[dict[str:str]]) -> list[str]:
         print("-executing test task, payload:", payload)
         time.sleep(2)
-        return [self.statuses[2],"succesvol getest"]
+        return [self.statuses[2], "succesvol getest"]

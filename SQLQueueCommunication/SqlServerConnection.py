@@ -20,7 +20,7 @@ class SqlServerConnection:
         # store connection in a variable
         self.connection: pyodbc.Connection = connection
         settingsfactory = Settings()
-        self.statuses: list[str] = list(settingsfactory.statuses)
+        self.statuses: list[str] = settingsfactory.statuses
 
     def getFirstPendingQueueItem(self) -> Task:
         statusToUse: str = self.statuses[0]
@@ -34,12 +34,10 @@ class SqlServerConnection:
         tasks = []
         for row in cursor.fetchall():
             # print("payload", row.payload)
-            task = Task(
+            firstTask = Task(
                 id=row.id,
                 task_type=row.task_type,
-                payload=json.loads(
-                    row.payload
-                ),  # Assuming payload is a JSON string or dict
+                payload=json.loads(row.payload),  # Assuming payload is a JSON string or dict
                 status=row.status,
                 statuslog=row.statuslog,
                 retries=row.retries,
@@ -48,9 +46,9 @@ class SqlServerConnection:
                 updated_at=row.updated_at,
                 processed_at=row.processed_at,
             )
-            tasks.append(task)
+            tasks.append(firstTask)
         cursor.close()
-        if tasks.__len__() <= 0:
+        if tasks.__len__() == 0:
             print("-no new tasks found")
             return None
         else:
@@ -58,8 +56,10 @@ class SqlServerConnection:
                 print(
                     "--Fout: er is meer dan 1 task gevonden maar er werd er maar 1 verwacht"
                 )
+                raise ValueError("er werden meerdere tasks gevonden")
+            firstTask: Task = tasks[0]
             print("-task(s) found:", tasks.__len__())
-            return tasks[0]
+            return firstTask
 
     def updateTask(self, task: Task) -> None:
         print("-updating task with id: ", task.id)
@@ -89,6 +89,6 @@ class SqlServerConnection:
         cursor.execute(query, values)
         if cursor.messages.__len__() > 0:
             print("-sqlmessages:", cursor.messages)
-        cursor.commit()
+        # cursor.commit()
         cursor.close()
         print("-updated")
