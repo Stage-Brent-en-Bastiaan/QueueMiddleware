@@ -32,7 +32,8 @@ class QueueManager:
                 running = False
                 print("ending queueprogram loop")
             teller = teller + 1
-    # 1 actie van de queueManager        
+
+    # 1 actie van de queueManager
     def action(self):
         serverConnection = SqlServerConnection()
         # Fetch data
@@ -48,21 +49,21 @@ class QueueManager:
         conn = SqlServerConnection()
         conn.updateTask(task)
         # get the function from taskdict that is linked to the task type name and execute it if it exists,
-        functionToExecute:list[str]=self.taskDict.get(task.task_type)
-        statusToUpdate=None
-        if(functionToExecute==None):
-            statusToUpdate=[self.statuses[3],"dit task type wordt niet ondersteund"]
+        functionToExecute: list[str] = self.taskDict.get(task.task_type)
+        statusToUpdate = None
+        if functionToExecute == None:
+            statusToUpdate = [self.statuses[3], "dit task type wordt niet ondersteund"]
         else:
-            statusToUpdate= functionToExecute(task.payload)
+            statusToUpdate = functionToExecute(task.payload)
         # return the returned status to the update_status method
         task.update_status(statusToUpdate)
         conn.updateTask(task)
 
     # taskdict methods, should all look the same
     def sendMessage(self, payload) -> list[str]:
-        log=""
+        log = ""
         print("-executing send message task, payload:", payload)
-        #check wether payload is the correct type
+        # check wether payload is the correct type
         if not isinstance(payload, dict):
             return (
                 self.statuses[3],
@@ -72,21 +73,23 @@ class QueueManager:
 
         # get the patient from the bewell api
         patientenFactory = Patienten()
-        hospitalId=payload["hospital_id"]
+        hospitalId = payload["hospital_id"]
         print("searching for patient met hospital_id: ", hospitalId)
         patient = patientenFactory.getPatientHospitalId(hospitalId)
-        #als er geen patient gevonden is geef een gepaste status en statuslog mee
+        # als er geen patient gevonden is geef een gepaste status en statuslog mee
         if patient == None:
             return [self.statuses[3], "deze patient bestaat niet in de bewell omgeving"]
         else:
             print("patient gevonden: ", patient)
-            log=log+"patient is gevonden, "
+            log = log + "patient is gevonden, "
             # verstuur message naar de gevonden patient
-            newMessage=MessagePost(recipient_id=patient.id, content=Content(text=payload["message"]))
-            messageFactory=Messages()
-            response=messageFactory.PostNewMessage(newMessage)
-            log=log+"bericht is verstuurd, "
-            print("bericht is verstuurd ",response)
+            newMessage = MessagePost(
+                recipient_id=patient.id, content=Content(text=payload["message"])
+            )
+            messageFactory = Messages()
+            response = messageFactory.PostNewMessage(newMessage)
+            log = log + "bericht is verstuurd, "
+            print("bericht is verstuurd ", response)
             return [self.statuses[2], log]
 
     def testTask(self, payload: list[dict[str:str]]) -> list[str]:

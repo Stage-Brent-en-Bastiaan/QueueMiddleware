@@ -54,7 +54,7 @@ class Messages:
             return None
 
     # maakt een nieuw bericht in de bewell api op basis van de parameter message:MessagePost
-    def PostNewMessage(self, Message:MessagePost)->str:
+    def PostNewMessage(self, Message: MessagePost) -> str:
         url = self.apiurl
         print("-posting: ", url)
         headers = {"Content-Type": "application/json;charset=utf-8"}

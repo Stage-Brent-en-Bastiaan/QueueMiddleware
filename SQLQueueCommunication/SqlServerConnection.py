@@ -37,7 +37,9 @@ class SqlServerConnection:
             firstTask = Task(
                 id=row.id,
                 task_type=row.task_type,
-                payload=json.loads(row.payload),  # Assuming payload is a JSON string or dict
+                payload=json.loads(
+                    row.payload
+                ),  # Assuming payload is a JSON string or dict
                 status=row.status,
                 statuslog=row.statuslog,
                 retries=row.retries,
