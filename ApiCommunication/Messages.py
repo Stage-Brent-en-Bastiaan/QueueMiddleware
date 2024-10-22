@@ -1,7 +1,7 @@
 # imports
 import requests
 import configparser
-from .Models2 import MessageGet, apiurl, basicauth
+from .Models2 import MessageGet, apiurl, basicauth, MessagePost
 from requests.auth import HTTPBasicAuth
 from pprint import pprint
 from datetime import timedelta, datetime
@@ -54,7 +54,7 @@ class Messages:
             return None
 
     # maakt een nieuw bericht in de bewell api op basis van de parameter message:MessagePost
-    def PostNewMessage(self, Message):
+    def PostNewMessage(self, Message:MessagePost)->str:
         url = self.apiurl
         print("-posting: ", url)
         headers = {"Content-Type": "application/json;charset=utf-8"}

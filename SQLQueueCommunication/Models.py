@@ -28,7 +28,7 @@ class Task:
         if new_status is None:
             raise ValueError("new_status cannot be None")
         self.status = new_status[0]
-        self.statuslog = self.statuslog + f", new_status[1]"
+        self.statuslog = self.statuslog + f"new_status[1] -- "
         self.updated_at = datetime.now()
         self.retries = self.retries + 1
 

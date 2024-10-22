@@ -89,6 +89,6 @@ class SqlServerConnection:
         cursor.execute(query, values)
         if cursor.messages.__len__() > 0:
             print("-sqlmessages:", cursor.messages)
-        # cursor.commit()
+        cursor.commit()
         cursor.close()
         print("-updated")

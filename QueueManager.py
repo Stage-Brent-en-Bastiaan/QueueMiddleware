@@ -38,7 +38,7 @@ class QueueManager:
             time.sleep(self.delay)
             if teller >= amountofloops - 1:
                 running = False
-                print("ending loop")
+                print("ending queueprogram loop")
             teller = teller + 1
 
     # behandeld de doorgestuurde task
@@ -54,13 +54,17 @@ class QueueManager:
 
     # taskdict methods, should all look the same
     def sendMessage(self, payload) -> list[str]:
+        log=""
         print("-executing send message task, payload:", payload)
+        #check wether payload is the correct type
         if not isinstance(payload, dict):
             return (
                 self.statuses[3],
                 """geef een juiste payload terug de payload voor sendmessage moet er zo uitzien { "patient_number":"7402241006","message":"Graag je huisarts contacteren voor meer info"}""",
             )
         payload: dict[str, str] = payload
+
+        #get the patient from the bewell api
         patientenFactory = Patienten()
         hospitalId=payload["hospital_id"]
         print("searching for patient met hospital_id: ", hospitalId)
@@ -69,8 +73,14 @@ class QueueManager:
             return [self.statuses[3], "deze patient bestaat niet in de bewell omgeving"]
         else:
             print("patient gevonden: ", patient)
-            #Messages.PostNewMessage(MessagePost(patient.id, patient.id["hospital_id"]))
-            return [self.statuses[2], "patient is gevonden"]
+            log=log+"patient is gevonden, "
+            #todo: verstuur message naar de gevonden patient
+            newMessage=MessagePost(recipient_id=patient.id, content=Content(text=payload["message"]))
+            messageFactory=Messages()
+            response=messageFactory.PostNewMessage(newMessage)
+            log=log+"bericht is verstuurd, "
+            print("bericht is verstuurd ",response)
+            return [self.statuses[2], log]
 
     def testTask(self, payload: list[dict[str:str]]) -> list[str]:
         print("-executing test task, payload:", payload)
