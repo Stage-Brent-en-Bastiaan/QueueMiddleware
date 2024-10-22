@@ -23,16 +23,18 @@ class Task:
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
     processed_at: Optional[datetime] = None
+    logTeller:Optional[int]=0
 
     def update_status(self, new_status: list[str]):
         if new_status is None:
             raise ValueError("new_status cannot be None")
         self.status = new_status[0]
-        self.statuslog = self.statuslog + f"new_status[1] -- "
+        self.statuslog = self.statuslog + f"{self.logTeller}: {new_status[1]} "
+        self.logTeller=self.logTeller+1
         self.updated_at = datetime.now()
-        self.retries = self.retries + 1
 
     def start_process(self):
         self.processed_at = datetime.now()
         settingsfactory = Settings()
         self.update_status([list(settingsfactory.statuses)[1], "verwerking is gestart"])
+        self.retries = self.retries + 1

@@ -6,4 +6,4 @@ class Settings:
             "completed",
             "failed",
         ]
-        self.maindelay = 2
+        self.maindelay = 0.01

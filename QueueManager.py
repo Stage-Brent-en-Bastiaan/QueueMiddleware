@@ -25,31 +25,37 @@ class QueueManager:
         running = True
         # program loop
         while running:
-            serverConnection = SqlServerConnection()
-
-            # Fetch data
-            firstQueueTask = serverConnection.getFirstPendingQueueItem()
-
-            if firstQueueTask == None:
-                pass
-            else:
-                self.handleTask(firstQueueTask)
+            self.action()
             # wacht
             time.sleep(self.delay)
             if teller >= amountofloops - 1:
                 running = False
                 print("ending queueprogram loop")
             teller = teller + 1
+    # 1 actie van de queueManager        
+    def action(self):
+        serverConnection = SqlServerConnection()
+        # Fetch data
+        firstQueueTask = serverConnection.getFirstPendingQueueItem()
+        if firstQueueTask == None:
+            pass
+        else:
+            self.handleTask(firstQueueTask)
 
     # behandeld de doorgestuurde task
     def handleTask(self, task: Task) -> None:
         task.start_process()
         conn = SqlServerConnection()
         conn.updateTask(task)
-        # get the function from taskdict that is linked to the task type name and execute it,
-        statusReturned: list[str] = self.taskDict.get(task.task_type)(task.payload)
+        # get the function from taskdict that is linked to the task type name and execute it if it exists,
+        functionToExecute:list[str]=self.taskDict.get(task.task_type)
+        statusToUpdate=None
+        if(functionToExecute==None):
+            statusToUpdate=[self.statuses[3],"dit task type wordt niet ondersteund"]
+        else:
+            statusToUpdate= functionToExecute(task.payload)
         # return the returned status to the update_status method
-        task.update_status(statusReturned)
+        task.update_status(statusToUpdate)
         conn.updateTask(task)
 
     # taskdict methods, should all look the same
@@ -60,21 +66,22 @@ class QueueManager:
         if not isinstance(payload, dict):
             return (
                 self.statuses[3],
-                """geef een juiste payload terug de payload voor sendmessage moet er zo uitzien { "patient_number":"7402241006","message":"Graag je huisarts contacteren voor meer info"}""",
+                """foutieve payload: geef een juiste payload terug de payload voor send_message moet er zo uitzien { "patient_number":"7402241006","message":"Graag je huisarts contacteren voor meer info"}""",
             )
         payload: dict[str, str] = payload
 
-        #get the patient from the bewell api
+        # get the patient from the bewell api
         patientenFactory = Patienten()
         hospitalId=payload["hospital_id"]
         print("searching for patient met hospital_id: ", hospitalId)
         patient = patientenFactory.getPatientHospitalId(hospitalId)
+        #als er geen patient gevonden is geef een gepaste status en statuslog mee
         if patient == None:
             return [self.statuses[3], "deze patient bestaat niet in de bewell omgeving"]
         else:
             print("patient gevonden: ", patient)
             log=log+"patient is gevonden, "
-            #todo: verstuur message naar de gevonden patient
+            # verstuur message naar de gevonden patient
             newMessage=MessagePost(recipient_id=patient.id, content=Content(text=payload["message"]))
             messageFactory=Messages()
             response=messageFactory.PostNewMessage(newMessage)

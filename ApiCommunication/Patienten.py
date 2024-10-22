@@ -62,10 +62,10 @@ class Patienten:
                 patients.append(returnType.from_dict(patient))
             return patients
         else:
-            raise ConnectionError(
-                f"could not get patienten from request:{url} {response.reason}"
-            )
-            return None
+            #raise ConnectionError(
+            #    f"could not get patienten from request:{url} {response.reason}"
+            #)
+            return []
 
 
 # errors
