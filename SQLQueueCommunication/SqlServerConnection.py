@@ -15,7 +15,7 @@ class SqlServerConnection:
         database = dbconfiguration["database"]
         username = dbconfiguration["username"]
         password = dbconfiguration["password"]
-        connection_string = f"DRIVER={{ODBC Driver 13 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
+        connection_string = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
         connection = pyodbc.connect(connection_string)
         # store connection in a variable
         self.connection: pyodbc.Connection = connection
