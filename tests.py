@@ -1,10 +1,8 @@
 # from django.test import TestCase
 import json
 from ApiCommunication.Patienten import Patienten
-
+from SQLQueueCommunication.SqlServerTesting import SqlServerTesting
+from SQLQueueCommunication.SqlServerConnection import SqlServerConnection
 # Create your tests here.
-patientFactory=Patienten
-
-response=patientFactory.getPatienten("")
-json=map(lambda item: json.dumps(item.__dict__),patientFactory)
-print(json)
+conn=SqlServerTesting()
+print(conn.insertTask())

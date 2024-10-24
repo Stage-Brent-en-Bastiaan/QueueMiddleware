@@ -7,6 +7,7 @@ class Settings:
             "failed",
         ]
         #delay in seconds
-        self.maindelay = 0.01
+        self.maindelay = 1
         self.standbyDelay=3
         self.maxRetries=20
+        self.maxPriority=100
