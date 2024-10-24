@@ -138,6 +138,7 @@ class SqlServerConnection:
         cursor.execute(query, values)
         cursor.commit()
         cursor.close()
+    
     def getTasks(self)->list[Task]:
         query=""
         query = """
@@ -166,6 +167,7 @@ class SqlServerConnection:
             tasks.append(firstTask)
         cursor.close()
         return tasks
+    
     def insertTask(self,newTask:Task):
         query = """
         INSERT INTO tasks_queue (
