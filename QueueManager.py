@@ -1,11 +1,12 @@
 import time
+import traceback
 from SQLQueueCommunication.SqlServerConnection import *
 from SQLQueueCommunication.Models import *
 from ApiCommunication.Messages import Messages
 from ApiCommunication.Patienten import Patienten
 from ApiCommunication.Models2 import *
 from Settings import Settings
-
+from LoggingHelpers.Logging import CustomLogging
 
 class QueueManager:
     def __init__(self) -> None:
@@ -17,6 +18,8 @@ class QueueManager:
         }
         self.statuses = list(settings.statuses)
         self.delay = settings.maindelay
+        self.standbyDelay=settings.standbyDelay
+        self.logFactory=CustomLogging()
 
     # het programmaverloop
     def main(self):
@@ -30,21 +33,35 @@ class QueueManager:
             time.sleep(self.delay)
             if teller >= amountofloops - 1:
                 running = False
-                print("ending queueprogram loop")
+                self.logFactory.Log("ending queueprogram main program loop")
             teller = teller + 1
 
     # 1 actie van de queueManager
     def action(self):
-        serverConnection = SqlServerConnection()
-        # Fetch data
-        firstQueueTask = serverConnection.getFirstPendingQueueItem()
-        if firstQueueTask == None:
+        #maak de connectie aan
+        serverConnection=None
+        try:
+            serverConnection = SqlServerConnection()
+        except Exception as e:
+            self.logFactory.Log(traceback.format_exc(),"probleem met de databaseconnectie:")
+        # get the Task uit de queue
+        firstQueueTask=None
+        try:
+            firstQueueTask = serverConnection.getNextQueueItem()
+        except Exception as e:
+            self.logFactory.Log(traceback.format_exc(),"er ging iets mis bij het opvragen van de task uit de queue")
+
+        #als er geen task is gevonden(alles is afgehandeld) ga in standby modus anders wordt de gevonden task afgehandeld
+        if (firstQueueTask == None):
+            self.logFactory("geen task gevonden")
+            time.sleep(self.standbyDelay)
             pass
         else:
             self.handleTask(firstQueueTask)
 
     # behandeld de doorgestuurde task
     def handleTask(self, task: Task) -> None:
+        self.logFactory.Log("task gevonden")
         task.start_process()
         conn = SqlServerConnection()
         conn.updateTask(task)
@@ -53,8 +70,15 @@ class QueueManager:
         statusToUpdate = None
         if functionToExecute == None:
             statusToUpdate = [self.statuses[3], "dit task type wordt niet ondersteund"]
+            self.logFactory.Log(traceback.format_exc(),"dit task type wordt niet ondersteund",task.task_type)
         else:
-            statusToUpdate = functionToExecute(task.payload)
+            try:
+                statusToUpdate = functionToExecute(task.payload)
+            except Exception as e:
+                statusToUpdate=[self.statuses[3], f"er ging iets mis bij het uitvoeren van de task: {traceback.format_exc()}"]
+                self.logFactory.Log(traceback.format_exc(),"er ging iets mis bij het uitvoeren van de task")
+                
+            
         # return the returned status to the update_status method
         task.update_status(statusToUpdate)
         conn.updateTask(task)
@@ -65,6 +89,7 @@ class QueueManager:
         print("-executing send message task, payload:", payload)
         # check wether payload is the correct type
         if not isinstance(payload, dict):
+            self.logFactory.Log("foutieve payload in de task")
             return (
                 self.statuses[3],
                 """foutieve payload: geef een juiste payload terug de payload voor send_message moet er zo uitzien { "patient_number":"7402241006","message":"Graag je huisarts contacteren voor meer info"}""",
@@ -74,10 +99,11 @@ class QueueManager:
         # get the patient from the bewell api
         patientenFactory = Patienten()
         hospitalId = payload["hospital_id"]
-        print("searching for patient met hospital_id: ", hospitalId)
+        self.logFactory.Log(hospitalId,"searching for patient met hospital_id: ")
         patient = patientenFactory.getPatientHospitalId(hospitalId)
         # als er geen patient gevonden is geef een gepaste status en statuslog mee
         if patient == None:
+            self.logFactory.Log("deze patient bestaat niet in de bewell omgeving")
             return [self.statuses[3], "deze patient bestaat niet in de bewell omgeving"]
         else:
             print("patient gevonden: ", patient)
@@ -89,10 +115,10 @@ class QueueManager:
             messageFactory = Messages()
             response = messageFactory.PostNewMessage(newMessage)
             log = log + "bericht is verstuurd, "
-            print("bericht is verstuurd ", response)
+            self.logFactory.Log(response,"bericht is verstuurd ")
             return [self.statuses[2], log]
 
     def testTask(self, payload: list[dict[str:str]]) -> list[str]:
-        print("-executing test task, payload:", payload)
+        self.logFactory.Log(payload,"-executing test task, payload:")
         time.sleep(2)
         return [self.statuses[2], "succesvol getest"]

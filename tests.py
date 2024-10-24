@@ -1,8 +1,10 @@
 # from django.test import TestCase
-
+import json
 from ApiCommunication.Patienten import Patienten
 
 # Create your tests here.
-patientenFactory: Patienten = Patienten()
-print(patientenFactory.getPatienten("?first_name=Bastiaan"))
-print(patientenFactory.getPatienten(""))
+patientFactory=Patienten
+
+response=patientFactory.getPatienten("")
+json=map(lambda item: json.dumps(item.__dict__),patientFactory)
+print(json)
