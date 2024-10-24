@@ -166,3 +166,25 @@ class SqlServerConnection:
             tasks.append(firstTask)
         cursor.close()
         return tasks
+    def insertTask(self,newTask:Task):
+        query = """
+        INSERT INTO tasks_queue (
+            task_type, payload, status, statuslog, retries,
+            priority, created_at, updated_at, processed_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        payload=json.dumps(newTask.payload)
+        values = (
+            newTask.task_type,
+            payload,
+            newTask.status,
+            newTask.statuslog,
+            newTask.retries,
+            newTask.priority,
+            newTask.created_at,
+            newTask.updated_at,
+            newTask.processed_at
+        )
+        cursor=self.connection.cursor()
+        cursor.execute(query,values)
+        cursor.commit()

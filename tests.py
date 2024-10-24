@@ -5,4 +5,9 @@ from SQLQueueCommunication.SqlServerTesting import SqlServerTesting
 from SQLQueueCommunication.SqlServerConnection import SqlServerConnection
 # Create your tests here.
 conn=SqlServerTesting()
-print(conn.insertTask())
+for x in range(30):
+    task=conn.createDummyTask()
+    print("-nieuwe task te inserten")
+    conn.insertTask(task)
+    print("inserted")
+print("-finished")
