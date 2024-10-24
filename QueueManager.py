@@ -31,10 +31,10 @@ class QueueManager:
             self.action()
             # wacht
             time.sleep(self.delay)
-            if teller >= amountofloops - 1:
-                running = False
-                self.logFactory.Log("ending queueprogram main program loop")
-            teller = teller + 1
+            # if teller >= amountofloops - 1:
+            #     running = False
+            #     self.logFactory.Log("ending queueprogram main program loop")
+            # teller = teller + 1
 
     # 1 actie van de queueManager
     def action(self):
@@ -53,7 +53,7 @@ class QueueManager:
 
         #als er geen task is gevonden(alles is afgehandeld) ga in standby modus anders wordt de gevonden task afgehandeld
         if (firstQueueTask == None):
-            self.logFactory("geen task gevonden")
+            self.logFactory.Log("geen task gevonden")
             time.sleep(self.standbyDelay)
             pass
         else:
