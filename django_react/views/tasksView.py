@@ -9,6 +9,6 @@ def tasksView(request):
 
     tasks_list = tasksFactory.getTasks()
 
-    tasks_json = json.dumps([task.__dict__ for task in tasks_list])
+    tasks_json = json.dumps([task.__dict__ for task in tasks_list], default=str)
 
     return Response(tasks_json)
