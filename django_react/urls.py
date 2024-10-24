@@ -17,11 +17,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
-from .views import patientView
+from .views import patientView, tasksView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("tasks.urls")),
+    path("api/tasks", tasksView.tasksView),
     path("api/patients", patientView.PatientGet)
 
 ]
