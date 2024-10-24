@@ -38,6 +38,8 @@ class QueueManager:
 
     # 1 actie van de queueManager
     def action(self):
+        #maak de connectie aan
+        serverConnection=None
         try:
             serverConnection = SqlServerConnection()
         except Exception as e:

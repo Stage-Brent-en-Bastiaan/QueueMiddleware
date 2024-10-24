@@ -15,7 +15,7 @@ class SqlServerConnection:
         database = dbconfiguration["database"]
         username = dbconfiguration["username"]
         password = dbconfiguration["password"]
-        connection_string = f"DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
+        connection_string = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
         connection = pyodbc.connect(connection_string)
         # store connection in a variable
         self.connection: pyodbc.Connection = connection
@@ -29,14 +29,15 @@ class SqlServerConnection:
             for retries in range(self.maxRetries):
                 response=self.getFirstQueItem(retries,priority)
                 if(response!=None): break
-            return response
+            if(response!=None): break
+        return response
         
     def getFirstQueItem(self,retries:int,priority:int)->Task:
         query=""
         query = """
             SELECT Top 1 id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
             FROM tasks_queue
-            WHERE retries= ? && priority=?
+            WHERE retries= ? AND priority=?
             """
         cursor = self.connection.cursor()
         cursor.execute(query, (retries,priority))
