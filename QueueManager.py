@@ -49,7 +49,7 @@ class QueueManager:
         try:
             firstQueueTask = serverConnection.getNextQueueItem()
         except Exception as e:
-            self._logFactory.Log(traceback.format_exc(),message="er ging iets mis bij het opvragen van de task uit de queue")
+            self._logFactory.Log(traceback.format_exc(),"er ging iets mis bij het opvragen van de task uit de queue")
 
         #als er geen task is gevonden(alles is afgehandeld) ga in standby modus anders wordt de gevonden task afgehandeld
         if (firstQueueTask == None):

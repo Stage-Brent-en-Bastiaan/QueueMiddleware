@@ -36,5 +36,5 @@ class Task:
     def start_process(self):
         self.processed_at = datetime.now()
         settingsfactory = Settings()
-        self.update_status([list(settingsfactory.statuses)[1], "verwerking is gestart"])
+        self.update_status([list("attempt", f"{self.retries}")])
         self.retries = self.retries + 1

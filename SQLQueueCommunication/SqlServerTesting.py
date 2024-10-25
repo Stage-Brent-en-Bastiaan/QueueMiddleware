@@ -36,7 +36,7 @@ class SqlServerTesting(SqlServerConnection):
             task_type="send_message",
             payload={"hospital_id": hospital_id.__str__(), "message": fake.sentence()},
             status=status,
-            statuslog="created",
+            statuslog="created ",
             retries=retries,
             priority=random.randint(1, 10),
             created_at=created_at,

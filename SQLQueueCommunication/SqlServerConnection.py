@@ -30,16 +30,20 @@ class SqlServerConnection:
         return response
     #geef de eerste queueitem(task) met de hoogste prioriteit en de laagste aantal retries en minder dan settings.maxretries
     def getFirstQueItem(self) -> Task:
+        
         query = """
             SELECT Top 1 id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
             FROM tasks_queue
             WHERE retries < ? AND status IN (?,?)
             ORDER BY priority DESC, retries ASC
             """
+        values=(self.maxRetries, self.statuses[0], self.statuses[3])
+        #print("-executing: ",query, " -with values: ",values)
         cursor = self.connection.cursor()
-        cursor.execute(query, (self.maxRetries, self.statuses[0], self.statuses[3]))
+        cursor.execute(query, values)
         tasks = []
         rows=cursor.fetchall()
+        cursor.close()
         for row in rows:
             # print("payload", row.payload)
             firstTask = Task(
@@ -57,7 +61,6 @@ class SqlServerConnection:
                 processed_at=row.processed_at,
             )
             tasks.append(firstTask)
-        cursor.close()
         if tasks.__len__() == 0:
             return None
         else:
