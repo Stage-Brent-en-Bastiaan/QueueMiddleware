@@ -55,6 +55,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:4000",
+
 ]
 
 ROOT_URLCONF = "django_react.urls"
