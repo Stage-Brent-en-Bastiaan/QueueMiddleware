@@ -29,20 +29,18 @@ class Patienten:
             return response[0]
 
     # geef een specifieke patient op basis van zijn id in de bewell api
-    def getPatient(self, id):
+    def getPatient(self, id)->PatientGet:
         if id in self.cache:
             return self.cache[id]
         else:
             parameters = f"/{id}"
-            returnType = PatientGet
             url = f"{self.apiurl}{parameters}"
-            print("-requesting: ", url)
             headers = {"Accept": "application/json"}
 
             response = requests.get(
                 url, auth=self.basicauth, headers=headers, verify=False
             )
-            patient = PatientGet.from_dict(response.json())
+            patient:PatientGet = PatientGet.from_dict(response.json())
             self.cache[id] = patient
             return patient
 
@@ -51,10 +49,10 @@ class Patienten:
     def getPatienten(self, parameters: str) -> list[PatientGet]:
         returnType = PatientGet
         url = f"{str(self.apiurl)}{str(parameters)}"
-        print("-requesting: ", url)
+        #print("-requesting: ", url)
         headers = {"Accept": "application/json"}
         response = requests.get(url, auth=self.basicauth, headers=headers, verify=False)
-        print("-responseStatus: ", response.status_code)
+        #print("-responseStatus: ", response.status_code)
         if response.status_code == 200:
             responseDict = response.json()
             patients = []

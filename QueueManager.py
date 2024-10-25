@@ -2,11 +2,11 @@ import time
 import traceback
 from SQLQueueCommunication.SqlServerConnection import *
 from SQLQueueCommunication.Models import *
-from ApiCommunication.Messages import Messages
-from ApiCommunication.Patienten import Patienten
-from ApiCommunication.Models2 import *
+from BewellApiCommunication.Messages import Messages
+from BewellApiCommunication.Patienten import Patienten
+from BewellApiCommunication.Models2 import *
 from Settings import Settings
-from LoggingHelpers.Logging import CustomLogging
+from Logging.Logging import CustomLogging
 
 class QueueManager:
     def __init__(self) -> None:
@@ -16,10 +16,10 @@ class QueueManager:
             "send_message": self.sendMessage,
             "test_task": self.testTask,
         }
-        self.statuses = list(settings.statuses)
+        self._statuses = list(settings.statuses)
         self.delay = settings.maindelay
         self.standbyDelay=settings.standbyDelay
-        self.logFactory=CustomLogging()
+        self._logFactory=CustomLogging()
 
     # het programmaverloop
     def main(self):
@@ -43,17 +43,17 @@ class QueueManager:
         try:
             serverConnection = SqlServerConnection()
         except Exception as e:
-            self.logFactory.Log(traceback.format_exc(),"probleem met de databaseconnectie:")
+            self._logFactory.Log(traceback.format_exc(),"probleem met de databaseconnectie:")
         # get the Task uit de queue
         firstQueueTask=None
         try:
             firstQueueTask = serverConnection.getNextQueueItem()
         except Exception as e:
-            self.logFactory.Log(traceback.format_exc(),"er ging iets mis bij het opvragen van de task uit de queue")
+            self._logFactory.Log(traceback.format_exc(),message="er ging iets mis bij het opvragen van de task uit de queue")
 
         #als er geen task is gevonden(alles is afgehandeld) ga in standby modus anders wordt de gevonden task afgehandeld
         if (firstQueueTask == None):
-            self.logFactory.Log("geen task gevonden")
+            self._logFactory.Log("geen task gevonden")
             time.sleep(self.standbyDelay)
             pass
         else:
@@ -61,7 +61,7 @@ class QueueManager:
 
     # behandeld de doorgestuurde task
     def handleTask(self, task: Task) -> None:
-        self.logFactory.Log("task gevonden")
+        self._logFactory.Log("task wordt behandelt met id:", task.id)
         task.start_process()
         conn = SqlServerConnection()
         conn.updateTask(task)
@@ -69,14 +69,14 @@ class QueueManager:
         functionToExecute: list[str] = self.taskDict.get(task.task_type)
         statusToUpdate = None
         if functionToExecute == None:
-            statusToUpdate = [self.statuses[3], "dit task type wordt niet ondersteund"]
-            self.logFactory.Log(traceback.format_exc(),"dit task type wordt niet ondersteund",task.task_type)
+            statusToUpdate = [self._statuses[3], "dit task type wordt niet ondersteund"]
+            self._logFactory.Log(traceback.format_exc(),"dit task type wordt niet ondersteund",task.task_type)
         else:
             try:
                 statusToUpdate = functionToExecute(task.payload)
             except Exception as e:
-                statusToUpdate=[self.statuses[3], f"er ging iets mis bij het uitvoeren van de task: {traceback.format_exc()}"]
-                self.logFactory.Log(traceback.format_exc(),"er ging iets mis bij het uitvoeren van de task")
+                statusToUpdate=[self._statuses[3], f"er ging iets mis bij het uitvoeren van de task: {traceback.format_exc()}"]
+                self._logFactory.Log(traceback.format_exc(),"er ging iets mis bij het uitvoeren van de task")
                 
             
         # return the returned status to the update_status method
@@ -89,9 +89,9 @@ class QueueManager:
         print("-executing send message task, payload:", payload)
         # check wether payload is the correct type
         if not isinstance(payload, dict):
-            self.logFactory.Log("foutieve payload in de task")
+            self._logFactory.Log("foutieve payload in de task")
             return (
-                self.statuses[3],
+                self._statuses[3],
                 """foutieve payload: geef een juiste payload terug de payload voor send_message moet er zo uitzien { "patient_number":"7402241006","message":"Graag je huisarts contacteren voor meer info"}""",
             )
         payload: dict[str, str] = payload
@@ -99,12 +99,12 @@ class QueueManager:
         # get the patient from the bewell api
         patientenFactory = Patienten()
         hospitalId = payload["hospital_id"]
-        self.logFactory.Log(hospitalId,"searching for patient met hospital_id: ")
+        self._logFactory.Log(hospitalId,"searching for patient met hospital_id: ")
         patient = patientenFactory.getPatientHospitalId(hospitalId)
         # als er geen patient gevonden is geef een gepaste status en statuslog mee
         if patient == None:
-            self.logFactory.Log("deze patient bestaat niet in de bewell omgeving")
-            return [self.statuses[3], "deze patient bestaat niet in de bewell omgeving"]
+            self._logFactory.Log("deze patient bestaat niet in de bewell omgeving")
+            return [self._statuses[3], "deze patient bestaat niet in de bewell omgeving"]
         else:
             print("patient gevonden: ", patient)
             log = log + "patient is gevonden, "
@@ -115,10 +115,10 @@ class QueueManager:
             messageFactory = Messages()
             response = messageFactory.PostNewMessage(newMessage)
             log = log + "bericht is verstuurd, "
-            self.logFactory.Log(response,"bericht is verstuurd ")
-            return [self.statuses[2], log]
+            self._logFactory.Log(response,"bericht is verstuurd ")
+            return [self._statuses[2], log]
 
     def testTask(self, payload: list[dict[str:str]]) -> list[str]:
-        self.logFactory.Log(payload,"-executing test task, payload:")
+        self._logFactory.Log(payload,"-executing test task, payload:")
         time.sleep(2)
-        return [self.statuses[2], "succesvol getest"]
+        return [self._statuses[2], "succesvol getest"]

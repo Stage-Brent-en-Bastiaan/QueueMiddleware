@@ -22,8 +22,5 @@ from .views import patientView, tasksView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/tasks", tasksView.tasksView),
-    path("api/patients", patientView.PatientGet)
-
+    path("api/patients", patientView.PatientGet),
 ]
-
-

@@ -6,8 +6,8 @@ class Settings:
             "completed",
             "failed",
         ]
-        #delay in seconds
+        # delay in seconds
         self.maindelay = 1
-        self.standbyDelay=3
-        self.maxRetries=20
-        self.maxPriority=100
+        self.standbyDelay = 3
+        self.maxRetries = 4
+        self.maxPriority = 100

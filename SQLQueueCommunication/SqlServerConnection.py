@@ -21,29 +21,26 @@ class SqlServerConnection:
         self.connection: pyodbc.Connection = connection
         settingsfactory = Settings()
         self.statuses: list[str] = settingsfactory.statuses
-        self.maxRetries=settingsfactory.maxRetries
-        self.maxPriority=settingsfactory.maxPriority
+        self.maxRetries = settingsfactory.maxRetries
+        self.maxPriority = settingsfactory.maxPriority
 
-    def getNextQueueItem(self)->Task:
-        response=None
-        for retries in range(self.maxRetries):
-            for priority in range(self.maxPriority,-1,-1):
-                response=self.getFirstQueItem(retries,priority)
-                if(response!=None): break
-            if(response!=None): break
+    def getNextQueueItem(self) -> Task:
+        response = None
+        response = self.getFirstQueItem()
         return response
-        
-    def getFirstQueItem(self,retries:int,priority:int)->Task:
-        query=""
+    #geef de eerste queueitem(task) met de hoogste prioriteit en de laagste aantal retries en minder dan settings.maxretries
+    def getFirstQueItem(self) -> Task:
         query = """
             SELECT Top 1 id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
             FROM tasks_queue
-            WHERE retries= ? AND priority=? AND status IN (?,?)
+            WHERE retries < ? AND status IN (?,?)
+            ORDER BY priority DESC, retries ASC
             """
         cursor = self.connection.cursor()
-        cursor.execute(query, (retries,priority,self.statuses[0],self.statuses[3]))
+        cursor.execute(query, (self.maxRetries, self.statuses[0], self.statuses[3]))
         tasks = []
-        for row in cursor.fetchall():
+        rows=cursor.fetchall()
+        for row in rows:
             # print("payload", row.payload)
             firstTask = Task(
                 id=row.id,
@@ -111,7 +108,6 @@ class SqlServerConnection:
             return firstTask
 
     def updateTask(self, task: Task) -> None:
-    
         query = """
             UPDATE tasks_queue
             SET 
@@ -138,8 +134,9 @@ class SqlServerConnection:
         cursor.execute(query, values)
         cursor.commit()
         cursor.close()
-    def getTasks(self)->list[Task]:
-        query=""
+
+    def getTasks(self) -> list[Task]:
+        query = ""
         query = """
             SELECT id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
             FROM tasks_queue
@@ -166,14 +163,15 @@ class SqlServerConnection:
             tasks.append(firstTask)
         cursor.close()
         return tasks
-    def insertTask(self,newTask:Task):
+
+    def insertTask(self, newTask: Task):
         query = """
         INSERT INTO tasks_queue (
             task_type, payload, status, statuslog, retries,
             priority, created_at, updated_at, processed_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
-        payload=json.dumps(newTask.payload)
+        payload = json.dumps(newTask.payload)
         values = (
             newTask.task_type,
             payload,
@@ -183,8 +181,8 @@ class SqlServerConnection:
             newTask.priority,
             newTask.created_at,
             newTask.updated_at,
-            newTask.processed_at
+            newTask.processed_at,
         )
-        cursor=self.connection.cursor()
-        cursor.execute(query,values)
+        cursor = self.connection.cursor()
+        cursor.execute(query, values)
         cursor.commit()

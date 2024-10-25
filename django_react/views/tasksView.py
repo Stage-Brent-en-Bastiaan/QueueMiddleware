@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from SQLQueueCommunication.SqlServerConnection import SqlServerConnection
 import json
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def tasksView(request):
     tasksFactory: SqlServerConnection = SqlServerConnection()
 

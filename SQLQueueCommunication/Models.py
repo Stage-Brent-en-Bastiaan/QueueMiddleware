@@ -13,7 +13,7 @@ class TaskType:
 
 @dataclass
 class Task:
-    id: int
+    id: Optional[int]
     task_type: str
     payload: any
     status: str

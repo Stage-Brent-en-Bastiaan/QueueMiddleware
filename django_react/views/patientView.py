@@ -1,6 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from ApiCommunication.Patienten import Patienten
+from BewellApiCommunication.Patienten import Patienten
 import json
 
 
