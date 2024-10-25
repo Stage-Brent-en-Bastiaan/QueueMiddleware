@@ -15,7 +15,7 @@ class SqlServerConnection:
         database = dbconfiguration["database"]
         username = dbconfiguration["username"]
         password = dbconfiguration["password"]
-        connection_string = f"DRIVER={{ODBC Driver 13 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
+        connection_string = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
         connection = pyodbc.connect(connection_string)
         # store connection in a variable
         self.connection: pyodbc.Connection = connection
@@ -138,6 +138,7 @@ class SqlServerConnection:
         cursor.execute(query, values)
         cursor.commit()
         cursor.close()
+    
     def getTasks(self)->list[Task]:
         query=""
         query = """
@@ -166,3 +167,26 @@ class SqlServerConnection:
             tasks.append(firstTask)
         cursor.close()
         return tasks
+    
+    def insertTask(self,newTask:Task):
+        query = """
+        INSERT INTO tasks_queue (
+            task_type, payload, status, statuslog, retries,
+            priority, created_at, updated_at, processed_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        payload=json.dumps(newTask.payload)
+        values = (
+            newTask.task_type,
+            payload,
+            newTask.status,
+            newTask.statuslog,
+            newTask.retries,
+            newTask.priority,
+            newTask.created_at,
+            newTask.updated_at,
+            newTask.processed_at
+        )
+        cursor=self.connection.cursor()
+        cursor.execute(query,values)
+        cursor.commit()
