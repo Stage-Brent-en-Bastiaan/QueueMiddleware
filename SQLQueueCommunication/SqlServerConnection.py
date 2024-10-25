@@ -134,9 +134,8 @@ class SqlServerConnection:
         cursor.execute(query, values)
         cursor.commit()
         cursor.close()
-
-    def getTasks(self) -> list[Task]:
-        query = ""
+    
+    def getTasks(self)->list[Task]:
         query = """
             SELECT id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
             FROM tasks_queue
@@ -163,8 +162,7 @@ class SqlServerConnection:
             tasks.append(firstTask)
         cursor.close()
         return tasks
-
-    def insertTask(self, newTask: Task):
+    def insertTask(self,newTask:Task):
         query = """
         INSERT INTO tasks_queue (
             task_type, payload, status, statuslog, retries,
