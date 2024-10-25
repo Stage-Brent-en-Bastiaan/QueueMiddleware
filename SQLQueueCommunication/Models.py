@@ -13,7 +13,6 @@ class TaskType:
 
 @dataclass
 class Task:
-    id: Optional[int]
     task_type: str
     payload: any
     status: str
@@ -24,6 +23,7 @@ class Task:
     updated_at: datetime = field(default_factory=datetime.now)
     processed_at: Optional[datetime] = None
     logTeller: Optional[int] = 0
+    id: Optional[int]=0
 
     def update_status(self, new_status: list[str]):
         if new_status is None:
@@ -36,5 +36,5 @@ class Task:
     def start_process(self):
         self.processed_at = datetime.now()
         settingsfactory = Settings()
-        self.update_status([list(settingsfactory.statuses)[1], "verwerking is gestart"])
+        self.update_status([list("attempt", f"{self.retries}")])
         self.retries = self.retries + 1

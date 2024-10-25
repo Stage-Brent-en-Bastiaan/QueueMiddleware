@@ -5,11 +5,11 @@ from SQLQueueCommunication.SqlServerTesting import SqlServerTesting
 
 class Testing:
     def main(self):
-        print(self.printAllData())
+        self.insertDummyTasks(15)
     #add 30 random tasks in the database queue
-    def insertDummyTasks(self):
+    def insertDummyTasks(self,aantal:int):
         conn = SqlServerTesting()
-        for x in range(10):
+        for x in range(aantal):
             task = conn.createDummyTask()
             print("-nieuwe task te inserten")
             conn.insertTask(task)
