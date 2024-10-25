@@ -7,8 +7,14 @@ import json
 
 @api_view(['GET','POST'])
 def tasksView(request):
-    tasksFactory: SqlServerConnection = SqlServerConnection()
-    if request.method == 'POST':
+    if request.method == 'GET':
+        tasksFactory: SqlServerConnection = SqlServerConnection()
+        tasks_list = tasksFactory.getTasks()
+        tasks_json = json.dumps([task.__dict__ for task in tasks_list], default=str)
+        return Response(tasks_json)
+    
+
+    elif request.method == 'POST':
         task_dict = (request.data)
 
     # Voorbeeld json:
@@ -35,20 +41,18 @@ def tasksView(request):
         task_type=task_dict["task_type"],
         payload=task_dict["payload"],
         status=task_dict["status"],
-        statuslog=task_dict["statuslog"],
+        # statuslog=task_dict["statuslog"],
         retries=task_dict["retries"],
         priority=task_dict["priority"],
-        created_at=datetime.strptime( task_dict["created_at"], '%Y-%m-%d %H:%M:%S.%f'),
+        # created_at=datetime.strptime( task_dict["created_at"], '%Y-%m-%d %H:%M:%S.%f'),
         # updated_at=datetime.strptime( task_dict["updated_at"], '%Y-%m-%d %H:%M:%S.%f'),
         # processed_at=datetime.strptime( task_dict["processed_at"], '%Y-%m-%d %H:%M:%S.%f'),
-        logTeller=task_dict["logTeller"]
+        # logTeller=task_dict["logTeller"]
         )
 
         
 
         tasksFactory.insertTask(new_task)
 
+        return Response(request.data, status="HTTP_201_CREATED")
         return Response({"message": "Succesvol toegvoegd!", "data": request.data})
-    tasks_list = tasksFactory.getTasks()
-    tasks_json = json.dumps([task.__dict__ for task in tasks_list], default=str)
-    return Response(tasks_json)
