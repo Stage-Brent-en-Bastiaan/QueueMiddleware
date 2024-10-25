@@ -22,6 +22,7 @@ class QueueManager:
         self.delay = settings.maindelay
         self.standbyDelay = settings.standbyDelay
         self._logFactory = CustomLogging()
+        self.active = False
 
     # het programmaverloop
     def main(self):
@@ -73,12 +74,20 @@ class QueueManager:
             self.standBy()
             pass
         else:
+            self.activate()
             self.handleTask(firstQueueTask)
 
     # als er niets wordt gevonden
     def standBy(self):
-        self._logFactory.Log(LoggingMessage("standing by", traceback.format_exc()))
+        if self.active == True:
+            self._logFactory.Log(LoggingMessage("standing by", traceback.format_exc()))
+            self.active = False
         time.sleep(self.standbyDelay)
+
+    def activate(self):
+        if self.active == False:
+            self._logFactory.Log(LoggingMessage("activating", traceback.format_exc()))
+            self.active = True
 
     # behandeld de doorgestuurde task
     def handleTask(self, task: Task) -> None:

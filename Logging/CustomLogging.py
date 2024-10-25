@@ -1,6 +1,7 @@
 import logging
 from .loggingModels import *
 from pathlib import Path
+import atexit
 
 
 class CustomLogging:
@@ -21,7 +22,7 @@ class CustomLogging:
         log_directory.mkdir(parents=True, exist_ok=True)
         log_file_path = (
             log_directory
-            / f'Log_created_at_{self.creationTime.strftime('%Y-%m-%d_%H-%M-%S')}.log'
+            / f'Log_created_at_{self.creationTime.strftime(r'%Y-%m-%d_%H-%M-%S')}.log'
         )
         log_file_path.touch(exist_ok=True)
 
@@ -39,6 +40,9 @@ class CustomLogging:
         self.logger.addHandler(fileHandler)
         self.logMessages: list[LoggingMessage] = []
         self.Log(LoggingMessage("logfile created"))
+
+    def cleanup(self) -> None:
+        self.Log(LoggingMessage(message="program exiting"))
 
     def Log(self, loggingMessage: LoggingMessage):
         self.logMessages.append(loggingMessage)
