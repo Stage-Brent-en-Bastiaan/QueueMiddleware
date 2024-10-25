@@ -28,21 +28,21 @@ class SqlServerConnection:
         response = None
         response = self.getFirstQueItem()
         return response
-    #geef de eerste queueitem(task) met de hoogste prioriteit en de laagste aantal retries en minder dan settings.maxretries
+
+    # geef de eerste queueitem(task) met de hoogste prioriteit en de laagste aantal retries en minder dan settings.maxretries
     def getFirstQueItem(self) -> Task:
-        
         query = """
             SELECT Top 1 id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
             FROM tasks_queue
             WHERE retries < ? AND status IN (?,?)
-            ORDER BY priority DESC, retries ASC
+            ORDER BY priority DESC, retries, created_at ASC
             """
-        values=(self.maxRetries, self.statuses[0], self.statuses[3])
-        #print("-executing: ",query, " -with values: ",values)
+        values = (self.maxRetries, self.statuses[0], self.statuses[3])
+        # print("-executing: ",query, " -with values: ",values)
         cursor = self.connection.cursor()
         cursor.execute(query, values)
         tasks = []
-        rows=cursor.fetchall()
+        rows = cursor.fetchall()
         cursor.close()
         for row in rows:
             # print("payload", row.payload)
@@ -137,8 +137,8 @@ class SqlServerConnection:
         cursor.execute(query, values)
         cursor.commit()
         cursor.close()
-    
-    def getTasks(self)->list[Task]:
+
+    def getTasks(self) -> list[Task]:
         query = """
             SELECT id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
             FROM tasks_queue
@@ -165,7 +165,8 @@ class SqlServerConnection:
             tasks.append(firstTask)
         cursor.close()
         return tasks
-    def insertTask(self,newTask:Task):
+
+    def insertTask(self, newTask: Task):
         query = """
         INSERT INTO tasks_queue (
             task_type, payload, status, statuslog, retries,

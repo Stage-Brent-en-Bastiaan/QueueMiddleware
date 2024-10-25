@@ -23,7 +23,7 @@ class Task:
     updated_at: datetime = field(default_factory=datetime.now)
     processed_at: Optional[datetime] = None
     logTeller: Optional[int] = 0
-    id: Optional[int]=0
+    id: Optional[int] = 0
 
     def update_status(self, new_status: list[str]):
         if new_status is None:
