@@ -7,14 +7,8 @@ import json
 
 @api_view(['GET','POST'])
 def tasksView(request):
-    if request.method == 'GET':
-        tasksFactory: SqlServerConnection = SqlServerConnection()
-        tasks_list = tasksFactory.getTasks()
-        tasks_json = json.dumps([task.__dict__ for task in tasks_list], default=str)
-        return Response(tasks_json)
-    
-
-    elif request.method == 'POST':
+    tasksFactory: SqlServerConnection = SqlServerConnection()
+    if request.method == 'POST':
         task_dict = (request.data)
 
     # Voorbeeld json:
@@ -54,5 +48,7 @@ def tasksView(request):
 
         tasksFactory.insertTask(new_task)
 
-        return Response(request.data, status="HTTP_201_CREATED")
         return Response({"message": "Succesvol toegvoegd!", "data": request.data})
+    tasks_list = tasksFactory.getTasks()
+    tasks_json = json.dumps([task.__dict__ for task in tasks_list], default=str)
+    return Response(tasks_json)
