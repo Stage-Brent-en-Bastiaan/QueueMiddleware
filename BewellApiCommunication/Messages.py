@@ -49,7 +49,7 @@ class Messages:
         url = self.apiurl
         headers = {"Content-Type": "application/json;charset=utf-8"}
         messageJson = json.dumps(asdict(Message))
-        #api call
+        # api call
         response = requests.post(
             url,
             auth=self.basicauth,

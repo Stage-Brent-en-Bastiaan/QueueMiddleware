@@ -25,7 +25,6 @@ class Task:
     logTeller: Optional[int] = 0
     id: Optional[int] = 0
 
-    
     def update_status(self, new_status: list[str]):
         if new_status is None:
             raise ValueError("new_status cannot be None")

@@ -88,20 +88,21 @@ class Content:
     type: Optional[str] = "message"
     title: str = "test message"
 
+
 @dataclass
 class File:
-    filename:str
-    data:str
+    filename: str
+    data: str
+
 
 @dataclass
 class MessagePost:
     content: Content
-    files : list[File]
+    files: list[File]
     recipient_id: int = 9610251011
     author_id: Optional[int] = 1
     # expiry_timestamp: Optional[int]=None
     silent: Optional[int] = 0
-
 
 
 # @dataclass

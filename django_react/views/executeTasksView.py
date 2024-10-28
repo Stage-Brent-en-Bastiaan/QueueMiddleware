@@ -8,5 +8,5 @@ import json
 def ExecuteTasks(request):
     queueManager = QueueManager()
     queueManager.action()
-    
+
     return Response("")
