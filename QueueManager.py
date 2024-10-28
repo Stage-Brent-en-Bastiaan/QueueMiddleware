@@ -49,7 +49,7 @@ class QueueManager:
             self._logFactory.Log(
                 loggingMessage=LoggingMessage(
                     "er kon geen verbinding gemaakt worden met de database",
-                    traceback.format_exc(),
+                    e.with_traceback(),
                 )
             )
             self.standBy()
@@ -61,8 +61,8 @@ class QueueManager:
         except Exception as e:
             self._logFactory.Log(
                 loggingMessage=LoggingMessage(
-                    "er ging iets mis bij het opvragen van de task uit de queue",
-                    traceback.format_exc(),
+                    f"er ging iets mis bij het opvragen van de task uit de queue: {e.with_traceback()}",
+                    e.with_traceback(),
                 )
             )
 

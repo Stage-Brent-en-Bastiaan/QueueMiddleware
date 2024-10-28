@@ -62,7 +62,3 @@ class Messages:
             return response.json().get("message_id")
         else:
             response.raise_for_status()
-
-
-# mostRecentMessage=getMostRecentMessage()
-# print(mostRecentMessage)

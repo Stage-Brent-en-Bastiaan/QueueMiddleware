@@ -1,6 +1,6 @@
 import configparser
 from typing import Any
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 from typing import List
 from dataclasses import dataclass
@@ -98,11 +98,12 @@ class File:
 @dataclass
 class MessagePost:
     content: Content
-    files: list[File]
+    files: list[File]=field(default_factory=list)
     recipient_id: int = 9610251011
-    author_id: Optional[int] = 1
+    author_id: int = 1
     # expiry_timestamp: Optional[int]=None
-    silent: Optional[int] = 0
+    silent: int = 0
+    type: str = "message"
 
 
 # @dataclass

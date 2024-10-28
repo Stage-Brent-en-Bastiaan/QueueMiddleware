@@ -34,7 +34,7 @@ class SqlServerTesting(SqlServerConnection):
         dummy_task = Task(
             id=task_id,
             task_type="send_message",
-            payload={"hospital_id": hospital_id.__str__(), "message": fake.sentence()},
+            payload={"hospital_id": hospital_id.__str__(), "message": fake.sentence(),"title":fake.name(),"files": [{"filename":"testfile.pdf","data":"aGFsbG8gZGl0IGlzIGlzIGJyZW50IHZhbnVpdCBlZW4gdGV4dGJlc3RhbmQ="}]},
             status=status,
             statuslog="created ",
             retries=retries,
