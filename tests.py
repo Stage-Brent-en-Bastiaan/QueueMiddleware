@@ -2,12 +2,15 @@
 import json
 from BewellApiCommunication.Patienten import Patienten
 from SQLQueueCommunication.SqlServerTesting import SqlServerTesting
+from QueueManager import QueueManager
+
 
 class Testing:
     def main(self):
         self.insertDummyTasks(15)
-    #add 30 random tasks in the database queue
-    def insertDummyTasks(self,aantal:int):
+
+    # add 30 random tasks in the database queue
+    def insertDummyTasks(self, aantal: int):
         conn = SqlServerTesting()
         for x in range(aantal):
             task = conn.createDummyTask()
@@ -15,11 +18,13 @@ class Testing:
             conn.insertTask(task)
             print("inserted")
         print("-finished")
+
     def printAllData(self):
         conn = SqlServerTesting()
         print(conn.getTasks())
 
-testing=Testing()
+
+testing = Testing()
 testing.main()
-
-
+QueueManager = QueueManager()
+QueueManager.main()

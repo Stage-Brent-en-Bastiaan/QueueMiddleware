@@ -14,7 +14,7 @@ class SqlServerTesting(SqlServerConnection):
 
     def createDummyTask(self) -> Task:
         fake = Faker()  # Initialize Faker
-        hospitalIdsToUse = ["9610251011", "9203161015","1"]
+        hospitalIdsToUse = ["9610251011", "9203161015", "1"]
 
         # Generate a random ID for the task
         task_id = random.randint(1, 100)  # Example range; adjust as necessary
