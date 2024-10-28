@@ -88,7 +88,8 @@ class QueueManager:
         if self.active == False:
             self._logFactory.Log(LoggingMessage("activating", traceback.format_exc()))
             self.active = True
-
+    def updateTask(self,logmessage:LoggingMessage):
+        pass
     # behandeld de doorgestuurde task
     def handleTask(self, task: Task) -> None:
         self._logFactory.Log(
@@ -128,13 +129,14 @@ class QueueManager:
         # return the returned status to the update_status method
         task.update_status(statusToUpdate)
         conn.updateTask(task)
+    
 
     # taskdict methods, should all look the same
     def sendMessage(self, payload) -> list[str]:
         log = ""
         self._logFactory.Log(
             LoggingMessage(
-                f"-executing send message task, payload: {payload}",
+                f"-executing send message task",
                 traceback.format_exc(),
             )
         )
@@ -180,14 +182,26 @@ class QueueManager:
             )
             log = log + f"patient gevonden met id: {patient.id}"
             # verstuur message naar de gevonden patient
+            message=payload["message"]
+            title=payload["title"]
+            content=Content( text=message,title=title)
+            filepayload:list[dict] =payload.get("files")
+            files:list[File] = []
+            for file in filepayload:
+                filename=file["filename"]
+                data=file["data"]
+                file=File(filename=filename,data=data)
+                files.append(file)
             newMessage = MessagePost(
-                recipient_id=patient.id, content=Content(text=payload["message"])
+                recipient_id=patient.id, 
+                content=content,
+                files=files
             )
             messageFactory = Messages()
             response = messageFactory.PostNewMessage(newMessage)
-            log = log + "bericht is verstuurd, "
+            log = log + f"bericht is verstuurd, id van verstuurde message: {response} "
             self._logFactory.Log(
-                LoggingMessage(f"bericht is verstuurd, response: {response}")
+                LoggingMessage(f"bericht is verstuurd, id van verstuurde message: {response}")
             )
             return [self._statuses[2], log]
 

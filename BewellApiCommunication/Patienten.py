@@ -17,7 +17,6 @@ class Patienten:
 
     # todo: geef een patient op basis van een meegegeven hospital_id
     def getPatientHospitalId(self, hospital_id: int) -> PatientGet:
-        pass
         response = self.getPatienten(f"?hospital_id={hospital_id}")
         if response.__len__() > 1:
             raise TooManyResultsDBException(

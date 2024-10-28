@@ -25,6 +25,7 @@ class Task:
     logTeller: Optional[int] = 0
     id: Optional[int] = 0
 
+    
     def update_status(self, new_status: list[str]):
         if new_status is None:
             raise ValueError("new_status cannot be None")
@@ -36,5 +37,5 @@ class Task:
     def start_process(self):
         self.processed_at = datetime.now()
         settingsfactory = Settings()
-        self.update_status(["attempt", f"{self.retries}"])
+        self.update_status([settingsfactory.statuses[1], f"attempt {self.retries}"])
         self.retries = self.retries + 1

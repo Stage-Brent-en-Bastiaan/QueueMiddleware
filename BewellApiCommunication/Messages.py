@@ -41,16 +41,15 @@ class Messages:
             return mostRecentMessage
         else:
             # print(response.status_code)
-            raise ConnectionError(response.json()["error_message"])
+            response.raise_for_status()
             return None
 
     # maakt een nieuw bericht in de bewell api op basis van de parameter message:MessagePost
     def PostNewMessage(self, Message: MessagePost) -> str:
         url = self.apiurl
-        # print("-posting: ", url)
         headers = {"Content-Type": "application/json;charset=utf-8"}
         messageJson = json.dumps(asdict(Message))
-        # print("post payload: ", messageJson)
+        #api call
         response = requests.post(
             url,
             auth=self.basicauth,
@@ -58,8 +57,6 @@ class Messages:
             verify=False,
             data=messageJson,
         )
-        # print("responseStatusCode:", response.status_code)
-        # print("responseStatus:", response.reason)
 
         if response.ok:
             return response.json().get("message_id")

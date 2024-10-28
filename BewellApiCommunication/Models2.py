@@ -86,29 +86,22 @@ class PatientGet:
 class Content:
     text: str
     type: Optional[str] = "message"
-    title: Optional[str] = "test message"
+    title: str = "test message"
 
+@dataclass
+class File:
+    filename:str
+    data:str
 
 @dataclass
 class MessagePost:
-    recipient_id: int
     content: Content
+    files : list[File]
+    recipient_id: int = 9610251011
     author_id: Optional[int] = 1
     # expiry_timestamp: Optional[int]=None
     silent: Optional[int] = 0
 
-    @staticmethod
-    def getSampleMessage():
-        message = MessagePost(
-            recipient_id=31969,
-            content=Content(
-                text="Hello! This is a test message.", type="text", title="Test Message"
-            ),
-            # author_id = 0,
-            # expiry_timestamp = 1699999999,
-            silent=1,
-        )
-        return message
 
 
 # @dataclass
