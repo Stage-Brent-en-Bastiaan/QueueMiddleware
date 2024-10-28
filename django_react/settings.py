@@ -58,6 +58,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4000",
     "http://172.24.103.220:5173",
     "http://10.33.128.61:5173",
+    "http://10.33.128.61:4000",
 ]
 
 ROOT_URLCONF = "django_react.urls"
