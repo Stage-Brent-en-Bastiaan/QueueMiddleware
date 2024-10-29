@@ -12,16 +12,22 @@ from Logging.loggingModels import *
 
 class QueueManager:
     def __init__(self) -> None:
+        
+        #---settings---
         # dit zijn alle types van tasks de kunnen uitgevoerd worden: ze worden gelinkt aan een methode
-        settings = Settings()
         self.taskDict: dict[str, function] = {
             "send_message": self.sendMessage,
             "test_task": self.testTask,
         }
+        settings = Settings()
         self._statuses = list(settings.statuses)
         self.delay = settings.maindelay
         self.standbyDelay = settings.standbyDelay
+
+        #---services---
         self._logFactory = CustomLogging()
+
+        #---variables---
         self.active = False
 
     # het programmaverloop
