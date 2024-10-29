@@ -98,7 +98,7 @@ class File:
 @dataclass
 class MessagePost:
     content: Content
-    files: list[File]=field(default_factory=list)
+    files: list[File] = field(default_factory=list)
     recipient_id: int = 9610251011
     author_id: int = 1
     # expiry_timestamp: Optional[int]=None

@@ -6,10 +6,13 @@ import time
 def main():
     queuemanager = QueueManager()
     queuemanager.main()
+
+
 def unitTesting():
-    testManagerFactory=TestManager()
+    testManagerFactory = TestManager()
     testManagerFactory.main()
+
 
 if __name__ == "__main__":
     main()
-    #unitTesting()
+    # unitTesting()
