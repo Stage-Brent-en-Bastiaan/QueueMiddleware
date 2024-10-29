@@ -18,6 +18,7 @@ class QueueManager:
         self.taskDict: dict[str, function] = {
             "send_message": self.sendMessage,
             "test_task": self.testTask,
+            "get_logs":self.getLogs,
         }
         settings = Settings()
         self._statuses = list(settings.statuses)
@@ -100,6 +101,7 @@ class QueueManager:
         conn = SqlServerConnection()
         conn.updateTask(task)
 
+    #logged de status en de message en update de 
     def logStatus(self, status: str, loggingMessage: LoggingMessage, task: Task):
         message = loggingMessage.message
         self.updateStatus(status, message, task)
@@ -129,6 +131,7 @@ class QueueManager:
             )
         else:
             try:
+                #execute the task based on task type
                 statusToUpdate = functionToExecute(task.payload)
             except Exception as e:
                 self.logStatus(
@@ -229,10 +232,19 @@ class QueueManager:
             self._logFactory.Log(LoggingMessage(message))
             return [self._statuses[2], log]
 
+    #een task om te testen of taskhandling werkt
     def testTask(self, payload: list[dict[str:str]]) -> list[str]:
         self._logFactory.Log(
-            LoggingMessage(f"executing test task, payload: {payload}"),
+            LoggingMessage(f"executing test task"),
             traceback.format_exc(),
         )
         time.sleep(2)
         return [self._statuses[2], "succesvol getest"]
+    
+    #todo: een gebruiker kan de logs van de api en van de middleware opvragen via een task
+    def getLogs(self, payload: list[dict[str:str]]) -> list[str]:
+        self._logFactory.Log(
+            LoggingMessage(f"executing get_logs task: not implemented"),
+            traceback.format_exc(),
+        )
+        pass
