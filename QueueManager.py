@@ -134,8 +134,8 @@ class QueueManager:
                 self.logStatus(
                     self._statuses[3],
                     LoggingMessage(
-                        f"er ging iets mis bij het uitvoeren van de task: {traceback.format_exc()}",
-                        traceback.format_exc(),
+                        f"{statusToUpdate[1]}, {e}",
+                        e.with_traceback(),
                     ),
                     task,
                 )
