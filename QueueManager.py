@@ -12,16 +12,23 @@ from Logging.loggingModels import *
 
 class QueueManager:
     def __init__(self) -> None:
+        
+        #---settings---
         # dit zijn alle types van tasks de kunnen uitgevoerd worden: ze worden gelinkt aan een methode
-        settings = Settings()
         self.taskDict: dict[str, function] = {
             "send_message": self.sendMessage,
             "test_task": self.testTask,
+            "get_logs":self.getLogs,
         }
+        settings = Settings()
         self._statuses = list(settings.statuses)
         self.delay = settings.maindelay
         self.standbyDelay = settings.standbyDelay
+
+        #---services---
         self._logFactory = CustomLogging()
+
+        #---variables---
         self.active = False
 
     # het programmaverloop
@@ -49,7 +56,7 @@ class QueueManager:
             self._logFactory.Log(
                 loggingMessage=LoggingMessage(
                     "er kon geen verbinding gemaakt worden met de database",
-                    traceback.format_exc(),
+                    e.with_traceback(),
                 )
             )
             self.standBy()
@@ -61,8 +68,8 @@ class QueueManager:
         except Exception as e:
             self._logFactory.Log(
                 loggingMessage=LoggingMessage(
-                    "er ging iets mis bij het opvragen van de task uit de queue",
-                    traceback.format_exc(),
+                    f"er ging iets mis bij het opvragen van de task uit de queue: {e.with_traceback()}",
+                    e.with_traceback(),
                 )
             )
 
@@ -89,8 +96,16 @@ class QueueManager:
             self._logFactory.Log(LoggingMessage("activating", traceback.format_exc()))
             self.active = True
 
-    def updateTask(self, logmessage: LoggingMessage):
-        pass
+    def updateStatus(self, status: str, message: str, task: Task):
+        task.update_status([status, message])
+        conn = SqlServerConnection()
+        conn.updateTask(task)
+
+    #logged de status en de message en update de 
+    def logStatus(self, status: str, loggingMessage: LoggingMessage, task: Task):
+        message = loggingMessage.message
+        self.updateStatus(status, message, task)
+        self._logFactory.Log(loggingMessage=loggingMessage)
 
     # behandeld de doorgestuurde task
     def handleTask(self, task: Task) -> None:
@@ -106,31 +121,35 @@ class QueueManager:
         functionToExecute: list[str] = self.taskDict.get(task.task_type)
         statusToUpdate = None
         if functionToExecute == None:
-            statusToUpdate = [self._statuses[3], "dit task type wordt niet ondersteund"]
-            self._logFactory.Log(
+            self.logStatus(
+                self._statuses[3],
                 LoggingMessage(
                     f"dit task type wordt niet ondersteund: {task.task_type}",
                     traceback.format_exc(),
-                )
+                ),
+                task,
             )
         else:
             try:
+                #execute the task based on task type
                 statusToUpdate = functionToExecute(task.payload)
             except Exception as e:
-                statusToUpdate = [
+                self.logStatus(
                     self._statuses[3],
-                    f"er ging iets mis bij het uitvoeren van de task: {traceback.format_exc()}",
-                ]
-                self._logFactory.Log(
                     LoggingMessage(
-                        "er ging iets mis bij het uitvoeren van de task",
-                        traceback.format_exc(),
-                    )
+                        f"{statusToUpdate[1]}, {e}",
+                        e.with_traceback(),
+                    ),
+                    task,
                 )
-
-        # return the returned status to the update_status method
-        task.update_status(statusToUpdate)
-        conn.updateTask(task)
+        self.logStatus(
+            status=statusToUpdate[0],
+            loggingMessage=LoggingMessage(
+                statusToUpdate[1],
+                traceback.format_exc(),
+            ),
+            task=task,
+        )
 
     # taskdict methods, should all look the same
     def sendMessage(self, payload) -> list[str]:
@@ -143,12 +162,23 @@ class QueueManager:
         )
         # check wether payload is the correct type
         if not isinstance(payload, dict):
-            self._logFactory.Log(
-                LoggingMessage("foutieve payload in de task", traceback.format_exc())
-            )
+            errormessage = """
+                foutieve payload: geef een juiste payload terug de payload voor send_message moet er zo uitzien: 		{
+		        "hospital_id" : "7402241006",
+		        "message" : "Graag je huisarts contacteren voor meer info"
+		        "title" : "nip test informering"
+		        "files" : [{
+		        	"filename" : "nip_test.pdf",
+		        	"data" : "<encoded file>"
+		        	},
+		        	{
+		        	"filename" : "nip_test2.pdf",
+		        	"data" : "<encoded file>"
+		        	}]}"""
+            self._logFactory.Log(LoggingMessage(errormessage, traceback.format_exc()))
             return (
                 self._statuses[3],
-                """foutieve payload: geef een juiste payload terug de payload voor send_message moet er zo uitzien { "patient_number":"7402241006","message":"Graag je huisarts contacteren voor meer info"}""",
+                errormessage,
             )
         payload: dict[str, str] = payload
 
@@ -164,24 +194,23 @@ class QueueManager:
         patient = patientenFactory.getPatientHospitalId(hospitalId)
         # als er geen patient gevonden is geef een gepaste status en statuslog mee
         if patient == None:
+            errormessage = "deze patient bestaat niet in de bewell omgeving"
             self._logFactory.Log(
                 LoggingMessage(
-                    "deze patient bestaat niet in de bewell omgeving",
+                    errormessage,
                     traceback.format_exc(),
                     logLevel=3,
                 )
             )
             return [
                 self._statuses[3],
-                "deze patient bestaat niet in de bewell omgeving",
+                errormessage,
             ]
         else:
-            self._logFactory.Log(
-                LoggingMessage(
-                    f"patient gevonden met id: {patient.id}", traceback.format_exc()
-                )
-            )
-            log = log + f"patient gevonden met id: {patient.id}"
+            message = f"patient gevonden met id: {patient.id}"
+            self._logFactory.Log(LoggingMessage(message, traceback.format_exc()))
+            log = log + message
+
             # verstuur message naar de gevonden patient
             message = payload["message"]
             title = payload["title"]
@@ -198,18 +227,24 @@ class QueueManager:
             )
             messageFactory = Messages()
             response = messageFactory.PostNewMessage(newMessage)
-            log = log + f"bericht is verstuurd, id van verstuurde message: {response} "
-            self._logFactory.Log(
-                LoggingMessage(
-                    f"bericht is verstuurd, id van verstuurde message: {response}"
-                )
-            )
+            message = f"bericht is verstuurd, id van verstuurde message: {response} "
+            log = log + message
+            self._logFactory.Log(LoggingMessage(message))
             return [self._statuses[2], log]
 
+    #een task om te testen of taskhandling werkt
     def testTask(self, payload: list[dict[str:str]]) -> list[str]:
         self._logFactory.Log(
-            LoggingMessage(f"executing test task, payload: {payload}"),
+            LoggingMessage(f"executing test task"),
             traceback.format_exc(),
         )
         time.sleep(2)
         return [self._statuses[2], "succesvol getest"]
+    
+    #todo: een gebruiker kan de logs van de api en van de middleware opvragen via een task
+    def getLogs(self, payload: list[dict[str:str]]) -> list[str]:
+        self._logFactory.Log(
+            LoggingMessage(f"executing get_logs task: not implemented"),
+            traceback.format_exc(),
+        )
+        pass

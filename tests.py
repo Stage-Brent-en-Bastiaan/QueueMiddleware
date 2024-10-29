@@ -7,7 +7,7 @@ from QueueManager import QueueManager
 
 class Testing:
     def main(self):
-        self.insertDummyTasks(15)
+        self.insertDummyTasks(20)
 
     # add 30 random tasks in the database queue
     def insertDummyTasks(self, aantal: int):
@@ -26,5 +26,5 @@ class Testing:
 
 testing = Testing()
 testing.main()
-QueueManager = QueueManager()
-QueueManager.main()
+# QueueManager = QueueManager()
+# QueueManager.main()
