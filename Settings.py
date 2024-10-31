@@ -1,13 +1,12 @@
 class Settings:
     def __init__(self) -> None:
-        self.statuses: list[str] = [
-            "in_queue",
-            "processing",
-            "completed",
-            "failed",
-        ]
+        self.statuses: dict[str:str] = {
+            "in_queue":"in_queue",
+            "processing":"processing",
+            "completed":"completed",
+            "failed":"failed",
+        }
         # delay in seconds
         self.maindelay = 1
         self.standbyDelay = 3
-        self.maxRetries = 4
         self.maxPriority = 100

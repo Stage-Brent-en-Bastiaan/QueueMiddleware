@@ -20,9 +20,10 @@ class SqlServerConnection:
         # store connection in a variable
         self.connection: pyodbc.Connection = connection
         settingsfactory = Settings()
-        self.statuses: list[str] = settingsfactory.statuses
-        self.maxRetries = settingsfactory.maxRetries
+        self.statuses: dict[str:str] = settingsfactory.statuses
         self.maxPriority = settingsfactory.maxPriority
+
+        #self.delaydict:dict[int,int]={0:0,1:60,2:120,3:240}
 
     def getNextQueueItem(self) -> Task:
         response = None
@@ -32,12 +33,15 @@ class SqlServerConnection:
     # geef de eerste queueitem(task) met de hoogste prioriteit en de laagste aantal retries en minder dan settings.maxretries
     def getFirstQueItem(self) -> Task:
         query = """
-            SELECT Top 1 id, task_type, payload, status, statuslog, retries, priority, created_at, updated_at, processed_at 
-            FROM tasks_queue
-            WHERE retries < ? AND status IN (?,?)
-            ORDER BY priority DESC, retries, created_at ASC
-            """
-        values = (self.maxRetries, self.statuses[0], self.statuses[3])
+        SELECT top 1 q.ID, q.task_type, q.payload, q.status, q.statuslog, q.retries, q.priority, q.created_at, q.updated_at, q.processed_at
+        FROM dbo.tasks_queue AS q LEFT OUTER JOIN
+             dbo.task_type AS tt ON q.task_type = tt.task_type
+        WHERE status IN (?, ?) 
+              AND DATEDIFF(MINUTE, updated_at, GETDATE()) > (tt.retryinterval*(2^q.retries))-1 
+              And q.retries<tt.maxretries
+        ORDER BY q.priority, q.ID
+        """
+        values = (self.statuses["in_queue"], self.statuses["failed"])
         # print("-executing: ",query, " -with values: ",values)
         cursor = self.connection.cursor()
         cursor.execute(query, values)
@@ -47,11 +51,11 @@ class SqlServerConnection:
         for row in rows:
             # print("payload", row.payload)
             firstTask = Task(
-                id=row.id,
+                id=row.ID,
                 task_type=row.task_type,
                 payload=json.loads(
                     row.payload
-                ),  # Assuming payload is a JSON string or dict
+                ),
                 status=row.status,
                 statuslog=row.statuslog,
                 retries=row.retries,
@@ -69,6 +73,7 @@ class SqlServerConnection:
             firstTask: Task = tasks[0]
             return firstTask
 
+    #deprecated
     def getFirstPendingQueueItem(self) -> Task:
         statusToUse: str = self.statuses[0]
         query = """
