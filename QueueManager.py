@@ -21,7 +21,7 @@ class QueueManager:
             "get_logs":self.getLogs,
         }
         settings = Settings()
-        self._statuses = list(settings.statuses)
+        self._statuses = settings.statuses
         self.delay = settings.maindelay
         self.standbyDelay = settings.standbyDelay
 
@@ -68,8 +68,8 @@ class QueueManager:
         except Exception as e:
             self._logFactory.Log(
                 loggingMessage=LoggingMessage(
-                    f"er ging iets mis bij het opvragen van de task uit de queue: {e.with_traceback()}",
-                    e.with_traceback(),
+                    f"er ging iets mis bij het opvragen van de task uit de queue: {e.__traceback__}",
+                    e.__traceback__,
                 )
             )
 
@@ -122,7 +122,7 @@ class QueueManager:
         statusToUpdate = None
         if functionToExecute == None:
             self.logStatus(
-                self._statuses[3],
+                self._statuses["failed"],
                 LoggingMessage(
                     f"dit task type wordt niet ondersteund: {task.task_type}",
                     traceback.format_exc(),
@@ -135,9 +135,9 @@ class QueueManager:
                 statusToUpdate = functionToExecute(task.payload)
             except Exception as e:
                 self.logStatus(
-                    self._statuses[3],
+                    self._statuses["failed"],
                     LoggingMessage(
-                        f"{statusToUpdate[1]}, {e}",
+                        f"{statusToUpdate["failed"]}, {e}",
                         e.with_traceback(),
                     ),
                     task,
@@ -145,8 +145,8 @@ class QueueManager:
         self.logStatus(
             status=statusToUpdate[0],
             loggingMessage=LoggingMessage(
-                statusToUpdate[1],
-                traceback.format_exc(),
+                message=statusToUpdate[1],
+                source=traceback.format_exc(),
             ),
             task=task,
         )
@@ -177,7 +177,7 @@ class QueueManager:
 		        	}]}"""
             self._logFactory.Log(LoggingMessage(errormessage, traceback.format_exc()))
             return (
-                self._statuses[3],
+                self._statuses["failed"],
                 errormessage,
             )
         payload: dict[str, str] = payload
@@ -203,7 +203,7 @@ class QueueManager:
                 )
             )
             return [
-                self._statuses[3],
+                self._statuses["failed"],
                 errormessage,
             ]
         else:
@@ -230,7 +230,7 @@ class QueueManager:
             message = f"bericht is verstuurd, id van verstuurde message: {response} "
             log = log + message
             self._logFactory.Log(LoggingMessage(message))
-            return [self._statuses[2], log]
+            return [self._statuses["completed"], log]
 
     #een task om te testen of taskhandling werkt
     def testTask(self, payload: list[dict[str:str]]) -> list[str]:
@@ -239,7 +239,7 @@ class QueueManager:
             traceback.format_exc(),
         )
         time.sleep(2)
-        return [self._statuses[2], "succesvol getest"]
+        return [self._statuses["completed"], "succesvol getest"]
     
     #todo: een gebruiker kan de logs van de api en van de middleware opvragen via een task
     def getLogs(self, payload: list[dict[str:str]]) -> list[str]:
