@@ -11,7 +11,7 @@ from Logging.loggingModels import *
 
 
 class QueueManager:
-    def __init__(self) -> None:
+    def __init__(self,logger) -> None:
         
         #---settings---
         # dit zijn alle types van tasks de kunnen uitgevoerd worden: ze worden gelinkt aan een methode
@@ -26,7 +26,7 @@ class QueueManager:
         self.standbyDelay = settings.standbyDelay
 
         #---services---
-        self._logFactory = CustomLogging()
+        self._logFactory = logger
 
         #---variables---
         self.active = False
