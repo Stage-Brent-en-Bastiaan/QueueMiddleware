@@ -23,7 +23,7 @@ class SqlServerConnection:
         self.statuses: dict[str:str] = settingsfactory.statuses
         self.maxPriority = settingsfactory.maxPriority
 
-        #self.delaydict:dict[int,int]={0:0,1:60,2:120,3:240}
+        # self.delaydict:dict[int,int]={0:0,1:60,2:120,3:240}
 
     def getNextQueueItem(self) -> Task:
         response = None
@@ -53,9 +53,7 @@ class SqlServerConnection:
             firstTask = Task(
                 id=row.ID,
                 task_type=row.task_type,
-                payload=json.loads(
-                    row.payload
-                ),
+                payload=json.loads(row.payload),
                 status=row.status,
                 statuslog=row.statuslog,
                 retries=row.retries,
@@ -73,7 +71,7 @@ class SqlServerConnection:
             firstTask: Task = tasks[0]
             return firstTask
 
-    #deprecated
+    # deprecated
     def getFirstPendingQueueItem(self) -> Task:
         statusToUse: str = self.statuses[0]
         query = """

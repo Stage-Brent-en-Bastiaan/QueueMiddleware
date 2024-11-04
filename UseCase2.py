@@ -1,11 +1,11 @@
-from QueueManager import QueueManager
+from QueueProgramLoop import QueueProgramLoop
 from unittests.TestManager import TestManager
 from Logging.CustomLogging import CustomLogging
 
 
 def main():
-    logger=CustomLogging()
-    queuemanager = QueueManager(logger=logger)
+    logger = CustomLogging()
+    queuemanager = QueueProgramLoop(logging=logger)
     queuemanager.main()
 
 

@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
-    'django_windows_tools',
+    "django_windows_tools",
 ]
 
 MIDDLEWARE = [

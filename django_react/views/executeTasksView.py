@@ -1,6 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from QueueManager import QueueManager
+from MiddleWare.QueueManager import QueueManager
 import json
 
 

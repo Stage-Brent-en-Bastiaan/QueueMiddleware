@@ -11,25 +11,21 @@ from Logging.loggingModels import *
 
 
 class QueueManager:
-    def __init__(self,logger) -> None:
-        
-        #---settings---
+    def __init__(self, logger: CustomLogging) -> None:
+        # ---settings---
         # dit zijn alle types van tasks de kunnen uitgevoerd worden: ze worden gelinkt aan een methode
         self.taskDict: dict[str, function] = {
             "send_message": self.sendMessage,
             "test_task": self.testTask,
-            "get_logs":self.getLogs,
+            "get_logs": self.getLogs,
         }
         settings = Settings()
         self._statuses = settings.statuses
         self.delay = settings.maindelay
         self.standbyDelay = settings.standbyDelay
 
-        #---services---
+        # ---services---
         self._logFactory = logger
-
-        #---variables---
-        self.active = False
 
     # het programmaverloop
     def main(self):
@@ -47,7 +43,7 @@ class QueueManager:
             # teller = teller + 1
 
     # 1 actie van de queueManager
-    def action(self):
+    def action(self) -> str:
         # maak de connectie aan
         serverConnection = None
         try:
@@ -59,7 +55,7 @@ class QueueManager:
                     e.with_traceback(),
                 )
             )
-            self.standBy()
+            return "error"
 
         # get the Task uit de queue
         firstQueueTask = None
@@ -72,36 +68,24 @@ class QueueManager:
                     e.__traceback__,
                 )
             )
+            return "error"
 
         # als er geen task is gevonden(alles is afgehandeld) ga in standby modus anders wordt de gevonden task afgehandeld
         if firstQueueTask == None:
             self._logFactory.Log(
                 LoggingMessage("geen task gevonden", traceback.format_exc())
             )
-            self.standBy()
-            pass
+            return "standby"
         else:
-            self.activate()
             self.handleTask(firstQueueTask)
-
-    # als er niets wordt gevonden
-    def standBy(self):
-        if self.active == True:
-            self._logFactory.Log(LoggingMessage("standing by", traceback.format_exc()))
-            self.active = False
-        time.sleep(self.standbyDelay)
-
-    def activate(self):
-        if self.active == False:
-            self._logFactory.Log(LoggingMessage("activating", traceback.format_exc()))
-            self.active = True
+            return "active"
 
     def updateStatus(self, status: str, message: str, task: Task):
         task.update_status([status, message])
         conn = SqlServerConnection()
         conn.updateTask(task)
 
-    #logged de status en de message en update de 
+    # logged de status en de message en update de
     def logStatus(self, status: str, loggingMessage: LoggingMessage, task: Task):
         message = loggingMessage.message
         self.updateStatus(status, message, task)
@@ -131,7 +115,7 @@ class QueueManager:
             )
         else:
             try:
-                #execute the task based on task type
+                # execute the task based on task type
                 statusToUpdate = functionToExecute(task.payload)
             except Exception as e:
                 self.logStatus(
@@ -152,7 +136,7 @@ class QueueManager:
         )
 
     # taskdict methods, should all look the same
-    def sendMessage(self, payload) -> list[str]:
+    def sendMessage(self, payload: dict) -> list[str]:
         log = ""
         self._logFactory.Log(
             LoggingMessage(
@@ -232,7 +216,7 @@ class QueueManager:
             self._logFactory.Log(LoggingMessage(message))
             return [self._statuses["completed"], log]
 
-    #een task om te testen of taskhandling werkt
+    # een task om te testen of taskhandling werkt
     def testTask(self, payload: list[dict[str:str]]) -> list[str]:
         self._logFactory.Log(
             LoggingMessage(f"executing test task"),
@@ -240,8 +224,8 @@ class QueueManager:
         )
         time.sleep(2)
         return [self._statuses["completed"], "succesvol getest"]
-    
-    #todo: een gebruiker kan de logs van de api en van de middleware opvragen via een task
+
+    # todo: een gebruiker kan de logs van de api en van de middleware opvragen via een task
     def getLogs(self, payload: list[dict[str:str]]) -> list[str]:
         self._logFactory.Log(
             LoggingMessage(f"executing get_logs task: not implemented"),
