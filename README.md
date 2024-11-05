@@ -2,8 +2,8 @@
 ## to run the queue middleware
 ### to create the virtual environment
 python -m venv .venv
-### to activate the virtual environment
-.venv/scripts/activate.ps1
+### to activate the virtual environment(only on windows)
+.venv/scripts/activate
 ### to install the packages based on requirements.txt
 pip install -r --requirements.txt
 
