@@ -1,22 +1,24 @@
 # Usecase2
 ## to run the queue middleware
-### create the virtual environment
+### when you clone the repo
+#### navigate to the folder with requirements.txt
+#### create the virtual environment
 $python -m venv .venv
-### activate the virtual environment(only on windows)
+#### activate the virtual environment(only on windows)
 $.venv/scripts/activate
-### install the packages based on requirements.txt
+#### install the packages based on requirements.txt
 $pip install -r --requirements.txt
 
-## when you add a new package 
-### activate the virtual environment(only on windows)
+### when you add a new package 
+#### activate the virtual environment(only on windows)
 $.venv/scripts/activate
-### update requirements.txt
+#### update requirements.txt
 $pip freeze > requirements.txt 
 
-## to run the app in debug mode
+### to run the app in debug mode
 $py Usecase2.py
 
-## to install and run the service
+### to install and start the service
 $py WindowsService.py install
 $py WindowsService.py start
 
