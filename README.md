@@ -1,6 +1,9 @@
 # Usecase2
 ## to run the queue middleware
 ### when you clone the repo
+#### navigate to the folder with init.ps1
+in powershell: $init.ps1
+### or
 #### navigate to the folder with requirements.txt
 #### create the virtual environment
 $python -m venv .venv

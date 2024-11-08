@@ -1,10 +1,7 @@
-# Pad naar de virtuele omgeving
-$venvPath = "venv\Scripts\Activate"
-
-# Activeer de virtuele omgeving
+#maak de virtuele omgeving
+python -m venv .venv
+# activeer de vrituele omgeving
+$venvPath = ".venv\Scripts\Activate"
 & $venvPath
-
 # Eventueel extra commando's die je binnen de omgeving wilt uitvoeren:
-python --version
-
 pip install -r requirements.txt
