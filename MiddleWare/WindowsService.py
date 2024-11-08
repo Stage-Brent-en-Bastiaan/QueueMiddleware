@@ -1,3 +1,4 @@
+import time
 import win32serviceutil
 import win32service
 import win32event
@@ -5,7 +6,7 @@ import servicemanager
 import socket
 import os
 import subprocess
-import QueueProgramLoop
+import MiddleWare.QueueProgramLoop as QueueProgramLoop
 # from Settings import Settings
 from Logging.CustomLogging import CustomLogging
 from Logging.CustomLogging import LoggingMessage
@@ -66,6 +67,7 @@ class MyService(win32serviceutil.ServiceFramework):
             # Perform your service tasks here
             # queueProgramLoop:QueueProgramLoop = QueueProgramLoop(self.logger)
             # queueProgramLoop.main()
+            time.sleep(0.0001)
             win32event.WaitForSingleObject(self.hWaitStop, 500)
 
     def startUwsgi(self):

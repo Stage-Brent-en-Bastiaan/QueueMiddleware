@@ -1,4 +1,4 @@
-from QueueProgramLoop import QueueProgramLoop
+from MiddleWare.QueueProgramLoop import QueueProgramLoop
 from unittests.TestManager import TestManager
 from Logging.CustomLogging import CustomLogging
 
