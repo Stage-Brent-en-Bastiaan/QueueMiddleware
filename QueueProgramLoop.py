@@ -1,4 +1,5 @@
 import time
+import traceback
 from Logging.loggingModels import LoggingMessage
 from MiddleWare.QueueManager import QueueManager
 from Settings import Settings
@@ -16,14 +17,14 @@ class QueueProgramLoop:
         self.standbyDelay = settings.standbyDelay
         self.active=False
 
-    def main(self):
+    def main(self)->None:
         # teller = 0
         # amountofloops = 2
         running = True
-        quemanager = QueueManager(self.logger)
+        queuemanager = QueueManager(self.logger)
         # program loop
         while running:
-            response = quemanager.action()
+            response = queuemanager.action()
             if response == "active":
                 self.activate()
             else:
@@ -42,6 +43,7 @@ class QueueProgramLoop:
             self.active = False
         time.sleep(self.standbyDelay)
 
+    #als er een task gevonden is
     def activate(self):
         if self.active == False:
             self._logFactory.Log(LoggingMessage("activating", traceback.format_exc()))
