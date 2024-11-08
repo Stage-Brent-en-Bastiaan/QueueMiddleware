@@ -7,7 +7,7 @@ $python -m venv .venv
 #### activate the virtual environment(only on windows)
 $.venv/scripts/activate
 #### install the packages based on requirements.txt
-$pip install -r --requirements.txt
+$pip install -r requirements.txt
 
 ### when you add a new package 
 #### activate the virtual environment(only on windows)
